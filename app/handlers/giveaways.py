@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 
-from aiogram import F, Router
+from aiogram import Router
 from aiogram.types import CallbackQuery, Message
 from sqlalchemy import select
 
@@ -36,13 +36,11 @@ settings = get_settings()
 log = logging.getLogger(__name__)
 
 
-def _same_chat_id(a: int | str | None, b: int | str | None) -> bool:
-    if a is None or b is None:
-        return False
+def same_id(a, b) -> bool:
     return str(a) == str(b)
 
 
-def _origin_channel_message_id(message: Message) -> int | None:
+def origin_channel_message_id(message: Message) -> int | None:
     origin = getattr(message, "forward_origin", None)
 
     if origin:
@@ -57,7 +55,7 @@ def _origin_channel_message_id(message: Message) -> int | None:
     return None
 
 
-def _is_auto_forwarded_channel_post(message: Message) -> bool:
+def is_auto_forward_from_channel(message: Message) -> bool:
     if getattr(message, "is_automatic_forward", False):
         return True
 
@@ -65,26 +63,26 @@ def _is_auto_forwarded_channel_post(message: Message) -> bool:
     if origin:
         origin_chat = getattr(origin, "chat", None)
         origin_chat_id = getattr(origin_chat, "id", None)
-        if _same_chat_id(origin_chat_id, settings.channel_id):
+        if same_id(origin_chat_id, settings.channel_id):
             return True
 
     sender_chat = getattr(message, "sender_chat", None)
     sender_chat_id = getattr(sender_chat, "id", None)
-    if _same_chat_id(sender_chat_id, settings.channel_id):
+    if same_id(sender_chat_id, settings.channel_id):
         return True
 
     return False
 
 
-def _root_id_from_comment(message: Message) -> int | None:
+def comment_root_id(message: Message) -> int | None:
     if message.reply_to_message:
         return message.reply_to_message.message_id
     return None
 
 
-async def _create_auto_drop_for_discussion_post(message: Message) -> None:
+async def create_auto_drop(message: Message) -> None:
     if not auto_drops_enabled():
-        log.info("Auto drops disabled")
+        log.info("AUTO_DROP_SKIP disabled")
         return
 
     async with session_scope() as session:
@@ -98,18 +96,18 @@ async def _create_auto_drop_for_discussion_post(message: Message) -> None:
         )
 
         if existing.scalar_one_or_none():
-            log.info("Auto drop already exists for discussion message_id=%s", message.message_id)
+            log.info("AUTO_DROP_SKIP already exists root=%s", message.message_id)
             return
 
         giveaway = await create_auto_giveaway(
             session,
             settings,
-            channel_message_id=_origin_channel_message_id(message),
+            channel_message_id=origin_channel_message_id(message),
             discussion_root_message_id=message.message_id,
             discussion_message_thread_id=message.message_thread_id or message.message_id,
         )
 
-        sent = await message.reply(
+        sent = await message.answer(
             auto_drop_text(
                 giveaway.title,
                 giveaway.prize_name,
@@ -125,7 +123,7 @@ async def _create_auto_drop_for_discussion_post(message: Message) -> None:
         await session.flush()
 
         log.info(
-            "Auto drop created: giveaway_id=%s root_message_id=%s thread_id=%s announcement_id=%s",
+            "AUTO_DROP_CREATED giveaway_id=%s root=%s thread=%s announcement=%s",
             giveaway.id,
             message.message_id,
             message.message_thread_id,
@@ -133,45 +131,65 @@ async def _create_auto_drop_for_discussion_post(message: Message) -> None:
         )
 
 
-@router.channel_post(F.chat.id == settings.channel_id)
-async def handle_channel_post(message: Message) -> None:
+@router.channel_post()
+async def any_channel_post(message: Message) -> None:
     log.info(
-        "Channel post received: chat_id=%s message_id=%s. Waiting for discussion auto-forward.",
+        "CHANNEL_POST chat_id=%s expected_channel_id=%s message_id=%s text=%r",
         message.chat.id,
+        settings.channel_id,
         message.message_id,
+        message.text or message.caption,
     )
 
+    if not same_id(message.chat.id, settings.channel_id):
+        log.info("CHANNEL_POST_SKIP wrong channel")
+        return
 
-@router.message(F.chat.id == settings.discussion_chat_id)
-async def handle_discussion_message(message: Message) -> None:
+    log.info("CHANNEL_POST_OK waiting discussion forward")
+
+
+@router.message()
+async def any_message(message: Message) -> None:
     log.info(
-        "Discussion message: chat_id=%s message_id=%s thread_id=%s auto=%s from_user=%s sender_chat=%s reply_to=%s",
+        "MESSAGE chat_id=%s expected_discussion_id=%s message_id=%s thread_id=%s auto=%s from=%s sender_chat=%s reply_to=%s text=%r",
         message.chat.id,
+        settings.discussion_chat_id,
         message.message_id,
         message.message_thread_id,
         getattr(message, "is_automatic_forward", None),
-        getattr(message.from_user, "id", None) if message.from_user else None,
-        getattr(message.sender_chat, "id", None) if getattr(message, "sender_chat", None) else None,
+        message.from_user.id if message.from_user else None,
+        message.sender_chat.id if message.sender_chat else None,
         message.reply_to_message.message_id if message.reply_to_message else None,
+        message.text or message.caption,
     )
 
-    if _is_auto_forwarded_channel_post(message):
-        await _create_auto_drop_for_discussion_post(message)
+    if not same_id(message.chat.id, settings.discussion_chat_id):
+        log.info("MESSAGE_SKIP wrong chat")
+        return
+
+    if is_auto_forward_from_channel(message):
+        log.info("MESSAGE_AUTO_FORWARD detected")
+        await create_auto_drop(message)
         return
 
     if message.from_user is None or message.from_user.is_bot:
+        log.info("MESSAGE_SKIP no user or bot")
         return
 
-    root_id = _root_id_from_comment(message)
+    root_id = comment_root_id(message)
     thread_id = message.message_thread_id
 
     async with session_scope() as session:
-        giveaway = await find_active_auto_by_comment(session, message.chat.id, root_id, thread_id)
+        giveaway = await find_active_auto_by_comment(
+            session,
+            message.chat.id,
+            root_id,
+            thread_id,
+        )
 
         if giveaway is None:
             log.info(
-                "No active auto giveaway found for comment: message_id=%s root_id=%s thread_id=%s",
-                message.message_id,
+                "COMMENT_SKIP no active giveaway root_id=%s thread_id=%s",
                 root_id,
                 thread_id,
             )
@@ -190,11 +208,11 @@ async def handle_discussion_message(message: Message) -> None:
         )
 
         if not result.ok:
-            log.info("Chance attempt rejected: user_id=%s reason=%s", message.from_user.id, result.reason)
+            log.info("CHANCE_SKIP user=%s reason=%s", message.from_user.id, result.reason)
             return
 
         if not result.won or result.winner is None:
-            log.info("Chance attempt lost: user_id=%s giveaway_id=%s", message.from_user.id, giveaway.id)
+            log.info("CHANCE_LOST user=%s giveaway=%s", message.from_user.id, giveaway.id)
             return
 
         await message.reply(
@@ -204,18 +222,18 @@ async def handle_discussion_message(message: Message) -> None:
         )
 
         log.info(
-            "Chance winner: user_id=%s giveaway_id=%s winner_id=%s",
+            "CHANCE_WIN user=%s giveaway=%s winner=%s",
             message.from_user.id,
             giveaway.id,
             result.winner.id,
         )
 
 
-@router.callback_query(F.data.startswith("claim:"))
+@router.callback_query(lambda c: c.data and c.data.startswith("claim:"))
 async def claim_chance_gift(callback: CallbackQuery) -> None:
     try:
         winner_id = int(callback.data.split(":", 1)[1])
-    except (ValueError, AttributeError):
+    except Exception:
         await callback.answer("Кнопка сломана.", show_alert=True)
         return
 
@@ -252,10 +270,10 @@ async def claim_chance_gift(callback: CallbackQuery) -> None:
             await callback.answer("Нужна ручная выдача", show_alert=True)
             return
 
-        await callback.answer("Не получилось отправить. Попробуй позже или напиши админу.", show_alert=True)
+        await callback.answer("Не получилось отправить. Попробуй позже.", show_alert=True)
 
 
-@router.callback_query(F.data.startswith("join:"))
+@router.callback_query(lambda c: c.data and c.data.startswith("join:"))
 async def join_manual_giveaway(callback: CallbackQuery) -> None:
     giveaway_id = int(callback.data.split(":", 1)[1])
 
