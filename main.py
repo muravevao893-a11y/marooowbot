@@ -12,7 +12,7 @@ from aiogram.webhook.aiohttp_server import SimpleRequestHandler, setup_applicati
 
 from app.config import get_settings
 from app.db.session import create_db_schema
-from app.handlers import admin, giveaways, user
+from app.handlers import admin, giveaways, payments, user
 from app.jobs.scheduler import init_scheduler, restore_active_giveaways
 
 
@@ -30,7 +30,14 @@ async def run_webhook(dp: Dispatcher, bot: Bot) -> None:
     await runner.setup()
     site = web.TCPSite(runner, settings.webapp_host, settings.webapp_port)
     await site.start()
-    logging.info("Webhook started on %s:%s%s", settings.webapp_host, settings.webapp_port, settings.webhook_path)
+
+    logging.info(
+        "Webhook started on %s:%s%s",
+        settings.webapp_host,
+        settings.webapp_port,
+        settings.webhook_path,
+    )
+
     await asyncio.Event().wait()
 
 
@@ -39,27 +46,45 @@ async def main() -> None:
         level=logging.INFO,
         format="%(asctime)s %(levelname)s %(name)s: %(message)s",
     )
+
     settings = get_settings()
 
     await create_db_schema()
 
-    bot = Bot(settings.bot_token, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
+    bot = Bot(
+        settings.bot_token,
+        default=DefaultBotProperties(parse_mode=ParseMode.HTML),
+    )
+
     storage = RedisStorage.from_url(settings.redis_url)
     dp = Dispatcher(storage=storage)
+
     dp.include_router(user.router)
     dp.include_router(admin.router)
+    dp.include_router(payments.router)
     dp.include_router(giveaways.router)
 
     scheduler = init_scheduler(bot, settings)
     scheduler.start()
+
     await restore_active_giveaways()
 
     if settings.webhook_full_url:
         await run_webhook(dp, bot)
     else:
-        await bot.delete_webhook(drop_pending_updates=True)
+        await bot.delete_webhook(drop_pending_updates=False)
         logging.info("Polling started")
-        await dp.start_polling(bot)
+        await dp.start_polling(
+            bot,
+            allowed_updates=[
+                "message",
+                "channel_post",
+                "callback_query",
+                "pre_checkout_query",
+                "my_chat_member",
+                "chat_member",
+            ],
+        )
 
 
 if __name__ == "__main__":
