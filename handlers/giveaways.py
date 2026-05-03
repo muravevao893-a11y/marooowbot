@@ -40,6 +40,10 @@ def same_id(a, b) -> bool:
     return str(a) == str(b)
 
 
+def is_admin_user(user_id: int | None) -> bool:
+    return bool(user_id and user_id in settings.admin_ids))
+
+
 def origin_channel_message_id(message: Message) -> int | None:
     origin = getattr(message, "forward_origin", None)
 
@@ -181,6 +185,10 @@ async def any_message(message: Message) -> None:
     # Остальное — обычные комментарии пользователей.
     if message.from_user is None or message.from_user.is_bot:
         log.info("MESSAGE_SKIP no user or bot")
+        return
+    
+    if is_admin_user(message.from_user.id):
+        log.info("MESSAGE_SKIP admin user=%s", message.from_user.id)
         return
 
     root_id = comment_root_id(message)
