@@ -5,9 +5,16 @@ from aiogram.exceptions import TelegramAPIError, TelegramForbiddenError
 
 from app.config import Settings
 from app.db.models import DeliveryStatus, GiveawayWinner
+from app.utils.tg_html import h
 
 
-async def send_gift_to_user(bot: Bot, settings: Settings, winner: GiveawayWinner, user_id: int, gift_id: str | None) -> None:
+async def send_gift_to_user(
+    bot: Bot,
+    settings: Settings,
+    winner: GiveawayWinner,
+    user_id: int,
+    gift_id: str | None,
+) -> None:
     if not gift_id:
         winner.delivery_status = DeliveryStatus.MANUAL_REQUIRED.value
         winner.delivery_error = "gift_id is empty; manual delivery required"
@@ -30,19 +37,46 @@ async def send_gift_to_user(bot: Bot, settings: Settings, winner: GiveawayWinner
         winner.delivery_error = None
 
 
-async def format_available_gifts(bot: Bot, limit: int = 30) -> str:
-    gifts = await bot.get_available_gifts()
+async def format_available_gifts(bot: Bot, limit: int = 50) -> str:
+    try:
+        gifts = await bot.get_available_gifts()
+    except TelegramAPIError as exc:
+        return (
+            "⚠️ <b>Не смог загрузить gifts.</b>\n\n"
+            f"<code>{h(exc)}</code>"
+        )
+
     rows: list[str] = []
+
     for gift in gifts.gifts[:limit]:
         star_count = getattr(gift, "star_count", "?")
         total_count = getattr(gift, "total_count", None)
         remaining_count = getattr(gift, "remaining_count", None)
+
+        sticker = getattr(gift, "sticker", None)
+        emoji = getattr(sticker, "emoji", None) or "🎁"
+
         extra = ""
+
         if remaining_count is not None:
-            extra = f" · left {remaining_count}"
+            extra = f" · осталось: <b>{remaining_count}</b>"
         elif total_count is not None:
-            extra = f" · total {total_count}"
-        rows.append(f"<code>{gift.id}</code> — ⭐ {star_count}{extra}")
+            extra = f" · всего: <b>{total_count}</b>"
+
+        rows.append(
+            f"{emoji} <code>{h(gift.id)}</code> — <b>⭐ {h(star_count)}</b>{extra}"
+        )
+
     if not rows:
-        return "Доступных подарков нет."
-    return "<b>Доступные gifts</b>\n\n" + "\n".join(rows)
+        return (
+            "<b>Доступных подарков нет.</b>\n\n"
+            "Telegram сейчас не отдаёт подарки для отправки."
+        )
+
+    return (
+        "<b>&amp;marooow gifts</b>\n"
+        "━━━━━━━━━━━━━━\n\n"
+        "Скопируй <code>gift_id</code> нужного подарка и вставь его в Railway:\n"
+        "<code>AUTO_DROP_GIFT_ID=...</code>\n\n"
+        + "\n".join(rows)
+    )
