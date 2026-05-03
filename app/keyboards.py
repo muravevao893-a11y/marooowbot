@@ -16,12 +16,28 @@ def profile_rules_kb() -> InlineKeyboardMarkup:
     ])
 
 
+from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
+
+
 def auto_drop_kb(bot_username: str, giveaway_id: int) -> InlineKeyboardMarkup:
-    deep = f"https://t.me/{bot_username}?start=drop_{giveaway_id}"
-    return InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="🧸 Зарегаться / участвовать", url=deep)],
-        [InlineKeyboardButton(text="👤 Профиль", url=f"https://t.me/{bot_username}?start=profile"), InlineKeyboardButton(text="📜 Правила", url=f"https://t.me/{bot_username}?start=rules")],
-    ])
+    username = bot_username.lstrip("@")
+
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(
+                    text="🤖 Создать профиль",
+                    url=f"https://t.me/{username}?start=drop_{giveaway_id}",
+                )
+            ],
+            [
+                InlineKeyboardButton(
+                    text="📜 Правила",
+                    callback_data="rules",
+                )
+            ],
+        ]
+    )
 
 
 def manual_giveaway_kb(giveaway_id: int, count: int, bot_username: str) -> InlineKeyboardMarkup:
