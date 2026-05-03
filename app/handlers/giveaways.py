@@ -107,7 +107,11 @@ async def create_auto_drop(message: Message) -> None:
             discussion_message_thread_id=message.message_thread_id or message.message_id,
         )
 
-        sent = await message.answer(
+        # ВАЖНО:
+        # message.reply(), а не message.answer().
+        # Так бот отвечает именно на авто-пост из канала в обсуждении,
+        # и Telegram показывает это как комментарий под постом.
+        sent = await message.reply(
             auto_drop_text(
                 giveaway.title,
                 giveaway.prize_name,
@@ -167,11 +171,14 @@ async def any_message(message: Message) -> None:
         log.info("MESSAGE_SKIP wrong chat")
         return
 
+    # Это авто-пересланный пост из канала в группу обсуждений.
+    # Под него бот должен написать свой коммент.
     if is_auto_forward_from_channel(message):
         log.info("MESSAGE_AUTO_FORWARD detected")
         await create_auto_drop(message)
         return
 
+    # Остальное — обычные комментарии пользователей.
     if message.from_user is None or message.from_user.is_bot:
         log.info("MESSAGE_SKIP no user or bot")
         return
