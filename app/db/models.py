@@ -6,6 +6,7 @@ from enum import StrEnum
 from sqlalchemy import BigInteger, Boolean, DateTime, Float, ForeignKey, Integer, String, Text, UniqueConstraint
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
+from sqlalchemy import Boolean, text
 
 
 class Base(DeclarativeBase):
@@ -61,34 +62,44 @@ class User(Base):
 
 
 class Giveaway(Base):
-    __tablename__ = 'giveaways'
+    __tablename__ = "giveaways"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    id: Mapped[int] = mapped_column(primary_key=True)
+
     type: Mapped[str] = mapped_column(String(32), index=True)
-    status: Mapped[str] = mapped_column(String(32), default=GiveawayStatus.ACTIVE.value, index=True)
+    status: Mapped[str] = mapped_column(String(32), index=True)
 
     title: Mapped[str] = mapped_column(String(255))
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
-    prize_name: Mapped[str] = mapped_column(String(255), default='мишка')
+
+    prize_name: Mapped[str] = mapped_column(String(255))
     gift_id: Mapped[str | None] = mapped_column(String(255), nullable=True)
+
     winners_count: Mapped[int] = mapped_column(Integer, default=1)
     min_participants: Mapped[int] = mapped_column(Integer, default=0)
 
-    channel_id: Mapped[str | None] = mapped_column(String(64), nullable=True, index=True)
+    require_subscription: Mapped[bool] = mapped_column(
+        Boolean,
+        default=True,
+        server_default=text("true"),
+        nullable=False,
+    )
+
+    channel_id: Mapped[str | None] = mapped_column(String(64), nullable=True)
     channel_message_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
-    discussion_chat_id: Mapped[str | None] = mapped_column(String(64), nullable=True, index=True)
-    discussion_root_message_id: Mapped[int | None] = mapped_column(Integer, nullable=True, index=True)
-    discussion_message_thread_id: Mapped[int | None] = mapped_column(Integer, nullable=True, index=True)
+
+    discussion_chat_id: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    discussion_root_message_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    discussion_message_thread_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+
     announcement_message_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
-    image_file_id: Mapped[str | None] = mapped_column(String(512), nullable=True)
+    image_file_id: Mapped[str | None] = mapped_column(String(255), nullable=True)
 
-    starts_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
-    ends_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), index=True)
+    starts_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    ends_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
     created_by: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
-
-    entries: Mapped[list['GiveawayEntry']] = relationship(back_populates='giveaway')
-    winners: Mapped[list['GiveawayWinner']] = relationship(back_populates='giveaway')
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now()) 
 
 
 class GiveawayEntry(Base):
