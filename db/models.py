@@ -1,14 +1,12 @@
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import datetime
 from enum import StrEnum
 
-from sqlalchemy import BigInteger, Boolean, DateTime, ForeignKey, Index, Integer, String, Text, UniqueConstraint
+from sqlalchemy import BigInteger, Boolean, DateTime, Float, ForeignKey, Integer, String, Text, UniqueConstraint
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
-
-
-def utcnow() -> datetime:
-    return datetime.now(timezone.utc)
+from sqlalchemy.sql import func
+from sqlalchemy import Boolean, text
 
 
 class Base(DeclarativeBase):
@@ -16,150 +14,166 @@ class Base(DeclarativeBase):
 
 
 class GiveawayType(StrEnum):
-    AUTO = "auto"
-    MANUAL = "manual"
+    AUTO = 'auto'
+    MANUAL = 'manual'
 
 
 class GiveawayStatus(StrEnum):
-    DRAFT = "draft"
-    ACTIVE = "active"
-    FINISHED = "finished"
-    CANCELLED = "cancelled"
+    ACTIVE = 'active'
+    FINISHED = 'finished'
+    CANCELLED = 'cancelled'
 
 
 class EntrySource(StrEnum):
-    COMMENT = "comment"
-    BUTTON = "button"
+    COMMENT = 'comment'
+    BUTTON = 'button'
 
 
 class DeliveryStatus(StrEnum):
-    PENDING = "pending"
-    SENT = "sent"
-    FAILED = "failed"
-    MANUAL_REQUIRED = "manual_required"
+    PENDING = 'pending'
+    SENT = 'sent'
+    FAILED = 'failed'
+    MANUAL_REQUIRED = 'manual_required'
+
+
+class ReferralStatus(StrEnum):
+    PENDING = 'pending'
+    ACTIVE = 'active'
+    REJECTED = 'rejected'
 
 
 class User(Base):
-    __tablename__ = "users"
+    __tablename__ = 'users'
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    telegram_id: Mapped[int] = mapped_column(BigInteger, unique=True, index=True, nullable=False)
-    username: Mapped[str | None] = mapped_column(String(64), nullable=True)
-    first_name: Mapped[str | None] = mapped_column(String(128), nullable=True)
-    is_registered: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
-    is_banned: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
-    blocked_bot: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
-    wins_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
-    entries_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, nullable=False)
-    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, onupdate=utcnow, nullable=False)
+    telegram_id: Mapped[int] = mapped_column(BigInteger, unique=True, index=True)
+    username: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    first_name: Mapped[str | None] = mapped_column(String(255), nullable=True)
 
-    entries: Mapped[list["GiveawayEntry"]] = relationship(back_populates="user")
-    wins: Mapped[list["GiveawayWinner"]] = relationship(back_populates="user")
+    entries_count: Mapped[int] = mapped_column(Integer, default=0)
+    wins_count: Mapped[int] = mapped_column(Integer, default=0)
+    is_banned: Mapped[bool] = mapped_column(Boolean, default=False)
+
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+
+    entries: Mapped[list['GiveawayEntry']] = relationship(back_populates='user')
+    wins: Mapped[list['GiveawayWinner']] = relationship(back_populates='user')
 
 
 class Giveaway(Base):
     __tablename__ = "giveaways"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    type: Mapped[str] = mapped_column(String(16), index=True, nullable=False)
-    status: Mapped[str] = mapped_column(String(16), index=True, nullable=False, default=GiveawayStatus.ACTIVE.value)
+    id: Mapped[int] = mapped_column(primary_key=True)
 
-    title: Mapped[str] = mapped_column(String(256), nullable=False)
+    type: Mapped[str] = mapped_column(String(32), index=True)
+    status: Mapped[str] = mapped_column(String(32), index=True)
+
+    title: Mapped[str] = mapped_column(String(255))
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
-    prize_name: Mapped[str] = mapped_column(String(256), nullable=False)
-    gift_id: Mapped[str | None] = mapped_column(String(256), nullable=True)
-    winners_count: Mapped[int] = mapped_column(Integer, default=1, nullable=False)
-    image_file_id: Mapped[str | None] = mapped_column(String(512), nullable=True)
 
-    channel_id: Mapped[str] = mapped_column(String(64), index=True, nullable=False)
+    prize_name: Mapped[str] = mapped_column(String(255))
+    gift_id: Mapped[str | None] = mapped_column(String(255), nullable=True)
+
+    winners_count: Mapped[int] = mapped_column(Integer, default=1)
+    min_participants: Mapped[int] = mapped_column(Integer, default=0)
+
+    require_subscription: Mapped[bool] = mapped_column(
+        Boolean,
+        default=True,
+        server_default=text("true"),
+        nullable=False,
+    )
+
+    channel_id: Mapped[str | None] = mapped_column(String(64), nullable=True)
     channel_message_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
-    discussion_chat_id: Mapped[str | None] = mapped_column(String(64), index=True, nullable=True)
+
+    discussion_chat_id: Mapped[str | None] = mapped_column(String(64), nullable=True)
     discussion_root_message_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
     discussion_message_thread_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+
     announcement_message_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    image_file_id: Mapped[str | None] = mapped_column(String(255), nullable=True)
 
-    min_participants: Mapped[int] = mapped_column(Integer, default=1, nullable=False)
-    require_subscription: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    starts_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    ends_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
     created_by: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
-
-    starts_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, nullable=False)
-    ends_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), index=True, nullable=False)
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, nullable=False)
-    finished_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
-
-    entries: Mapped[list["GiveawayEntry"]] = relationship(back_populates="giveaway", cascade="all, delete-orphan")
-    winners: Mapped[list["GiveawayWinner"]] = relationship(back_populates="giveaway", cascade="all, delete-orphan")
-
-    __table_args__ = (
-        Index("ix_giveaway_discussion_root", "discussion_chat_id", "discussion_root_message_id"),
-        Index("ix_giveaway_thread", "discussion_chat_id", "discussion_message_thread_id"),
-    )
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now()) 
 
 
 class GiveawayEntry(Base):
-    __tablename__ = "giveaway_entries"
+    __tablename__ = 'giveaway_entries'
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    giveaway_id: Mapped[int] = mapped_column(ForeignKey("giveaways.id", ondelete="CASCADE"), nullable=False)
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
-    telegram_id: Mapped[int] = mapped_column(BigInteger, index=True, nullable=False)
+    giveaway_id: Mapped[int] = mapped_column(ForeignKey('giveaways.id'), index=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey('users.id'), index=True)
+    telegram_id: Mapped[int] = mapped_column(BigInteger, index=True)
     comment_message_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
-    source: Mapped[str] = mapped_column(String(16), nullable=False)
-    is_valid: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, nullable=False)
+    source: Mapped[str] = mapped_column(String(32), default=EntrySource.BUTTON.value)
+    is_valid: Mapped[bool] = mapped_column(Boolean, default=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
-    giveaway: Mapped[Giveaway] = relationship(back_populates="entries")
-    user: Mapped[User] = relationship(back_populates="entries")
+    giveaway: Mapped[Giveaway] = relationship(back_populates='entries')
+    user: Mapped[User] = relationship(back_populates='entries')
 
-    __table_args__ = (
-        UniqueConstraint("giveaway_id", "user_id", name="uq_entry_giveaway_user"),
-    )
+    __table_args__ = (UniqueConstraint('giveaway_id', 'user_id', name='uq_giveaway_entry_user'),)
 
+
+class GiveawayWinner(Base):
+    __tablename__ = 'giveaway_winners'
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    giveaway_id: Mapped[int] = mapped_column(ForeignKey('giveaways.id'), index=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey('users.id'), index=True)
+    gift_id: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    delivery_status: Mapped[str] = mapped_column(String(32), default=DeliveryStatus.PENDING.value)
+    delivery_error: Mapped[str | None] = mapped_column(Text, nullable=True)
+    selected_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    claimed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+    giveaway: Mapped[Giveaway] = relationship(back_populates='winners')
+    user: Mapped[User] = relationship(back_populates='wins')
+
+    __table_args__ = (UniqueConstraint('giveaway_id', 'user_id', name='uq_giveaway_winner_user'),)
 
 
 class ChanceAttempt(Base):
-    __tablename__ = "chance_attempts"
+    __tablename__ = 'chance_attempts'
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    giveaway_id: Mapped[int] = mapped_column(ForeignKey("giveaways.id", ondelete="CASCADE"), nullable=False)
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
-    telegram_id: Mapped[int] = mapped_column(BigInteger, index=True, nullable=False)
-    comment_message_id: Mapped[int] = mapped_column(Integer, nullable=False)
-    roll_value: Mapped[int] = mapped_column(Integer, nullable=False)
-    chance_percent: Mapped[int] = mapped_column(Integer, nullable=False)
-    is_win: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, nullable=False)
+    giveaway_id: Mapped[int] = mapped_column(ForeignKey('giveaways.id'), index=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey('users.id'), index=True)
+    comment_message_id: Mapped[int] = mapped_column(Integer, unique=True)
+    discussion_root_message_id: Mapped[int | None] = mapped_column(Integer, nullable=True, index=True)
+    text_hash: Mapped[str | None] = mapped_column(String(64), nullable=True, index=True)
+    chance_percent: Mapped[float] = mapped_column(Float)
+    won: Mapped[bool] = mapped_column(Boolean, default=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
-    __table_args__ = (
-        UniqueConstraint("giveaway_id", "comment_message_id", name="uq_chance_attempt_comment"),
-        Index("ix_chance_attempt_user_giveaway", "giveaway_id", "user_id"),
-    )
 
-class GiveawayWinner(Base):
-    __tablename__ = "giveaway_winners"
+class Referral(Base):
+    __tablename__ = 'referrals'
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    giveaway_id: Mapped[int] = mapped_column(ForeignKey("giveaways.id", ondelete="CASCADE"), nullable=False)
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
-    gift_id: Mapped[str | None] = mapped_column(String(256), nullable=True)
-    delivery_status: Mapped[str] = mapped_column(String(32), default=DeliveryStatus.PENDING.value, nullable=False)
-    delivery_error: Mapped[str | None] = mapped_column(Text, nullable=True)
-    selected_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, nullable=False)
+    referrer_user_id: Mapped[int] = mapped_column(ForeignKey('users.id'), index=True)
+    referred_user_id: Mapped[int] = mapped_column(ForeignKey('users.id'), unique=True, index=True)
+    status: Mapped[str] = mapped_column(String(32), default=ReferralStatus.PENDING.value, index=True)
+    comments_count: Mapped[int] = mapped_column(Integer, default=0)
+    unique_posts_count: Mapped[int] = mapped_column(Integer, default=0)
+    bonus_percent: Mapped[float] = mapped_column(Float, default=0.0)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    activated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
-    giveaway: Mapped[Giveaway] = relationship(back_populates="winners")
-    user: Mapped[User] = relationship(back_populates="wins")
-
-    __table_args__ = (
-        UniqueConstraint("giveaway_id", "user_id", name="uq_winner_giveaway_user"),
-    )
+    __table_args__ = (UniqueConstraint('referrer_user_id', 'referred_user_id', name='uq_referral_pair'),)
 
 
-class AdminLog(Base):
-    __tablename__ = "admin_logs"
+class ReferralActivity(Base):
+    __tablename__ = 'referral_activity'
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    admin_id: Mapped[int] = mapped_column(BigInteger, nullable=False, index=True)
-    action: Mapped[str] = mapped_column(String(128), nullable=False)
-    payload: Mapped[str | None] = mapped_column(Text, nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, nullable=False)
+    referral_id: Mapped[int] = mapped_column(ForeignKey('referrals.id'), index=True)
+    referred_user_id: Mapped[int] = mapped_column(ForeignKey('users.id'), index=True)
+    discussion_root_message_id: Mapped[int] = mapped_column(Integer, index=True)
+    comment_message_id: Mapped[int] = mapped_column(Integer, unique=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
