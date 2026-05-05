@@ -7,19 +7,26 @@ from aiohttp import web
 from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
+from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram.fsm.storage.redis import RedisStorage
 from aiogram.webhook.aiohttp_server import SimpleRequestHandler, setup_application
 
 from app.config import get_settings
 from app.db.session import create_db_schema
 from app.handlers import admin, giveaways, payments, user
-from app.jobs.scheduler import init_scheduler
+from app.jobs.scheduler import init_scheduler, restore_active_giveaways
+
+
+async def _make_storage(redis_url: str):
+    try:
+        return RedisStorage.from_url(redis_url)
+    except Exception:
+        return MemoryStorage()
 
 
 async def run_webhook(dp: Dispatcher, bot: Bot) -> None:
     settings = get_settings()
     assert settings.webhook_full_url is not None
-
     await bot.set_webhook(settings.webhook_full_url, drop_pending_updates=False)
 
     app = web.Application()
@@ -30,22 +37,22 @@ async def run_webhook(dp: Dispatcher, bot: Bot) -> None:
     await runner.setup()
     site = web.TCPSite(runner, settings.webapp_host, settings.webapp_port)
     await site.start()
-
-    logging.info('Webhook started on %s:%s%s', settings.webapp_host, settings.webapp_port, settings.webhook_path)
+    logging.info("Webhook started: %s", settings.webhook_full_url)
     await asyncio.Event().wait()
 
 
 async def main() -> None:
-    logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s %(name)s: %(message)s')
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
     settings = get_settings()
+    if not settings.bot_token:
+        raise RuntimeError("BOT_TOKEN is empty")
 
     await create_db_schema()
 
     bot = Bot(settings.bot_token, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
-    storage = RedisStorage.from_url(settings.redis_url)
+    storage = await _make_storage(settings.redis_url)
     dp = Dispatcher(storage=storage)
 
-    # Order matters: specific private/admin/payment handlers first, catch-all giveaway handler last.
     dp.include_router(user.router)
     dp.include_router(admin.router)
     dp.include_router(payments.router)
@@ -53,25 +60,26 @@ async def main() -> None:
 
     scheduler = init_scheduler(bot, settings)
     scheduler.start()
-    logging.info('Scheduler started')
+    logging.info("Scheduler started")
+    await restore_active_giveaways()
 
     if settings.webhook_full_url:
         await run_webhook(dp, bot)
     else:
         await bot.delete_webhook(drop_pending_updates=False)
-        logging.info('Polling started')
+        logging.info("Polling started")
         await dp.start_polling(
             bot,
             allowed_updates=[
-                'message',
-                'channel_post',
-                'callback_query',
-                'pre_checkout_query',
-                'my_chat_member',
-                'chat_member',
+                "message",
+                "channel_post",
+                "callback_query",
+                "pre_checkout_query",
+                "my_chat_member",
+                "chat_member",
             ],
         )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     asyncio.run(main())

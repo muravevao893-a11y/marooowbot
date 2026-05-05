@@ -1,5 +1,5 @@
 from app.main import main
-import asyncio
 
-if __name__ == '__main__':
+if __name__ == "__main__":
+    import asyncio
     asyncio.run(main())

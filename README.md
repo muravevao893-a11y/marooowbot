@@ -1,105 +1,51 @@
-# &marooow giveaway bot
+# maroow giveaway bot — final
 
-Telegram-бот для канала/чата с авто-дропами, шансами за комментарии, рефералкой и красивым HTML-оформлением сообщений.
+Railway-ready Telegram bot for channel comment drops.
 
-## Что есть в этой версии
+## Features
 
-- авто-сообщение под каждым новым постом канала;
-- шанс выпадения мишки за комментарий;
-- победа ответом на комментарий + кнопка «Забрать подарок»;
-- админы/основатель не участвуют;
-- реферальная система: активный реферал = +0.1% к шансу;
-- защита рефов: 5 комментариев под 2 разными постами + подписка;
-- антиспам: cooldown, лимит попыток в час, фильтр коротких/одинаковых комментариев;
-- `/chance` — личный шанс пользователя;
-- `/winners` — последние победители;
-- `/refs` — топ активных рефералов;
-- `/activity` — топ активности за неделю;
-- `/stats` — админская статистика;
-- автопруф в канал после успешной выдачи подарка;
-- ручные розыгрыши через `/admin`;
-- Stars: `/balance`, `/topup 100`, `/gifts`;
-- PostgreSQL + Redis + Railway-ready структура.
+- Auto-drop message under every new channel post in linked discussion chat
+- Chance-based teddy bear drop per valid comment
+- Winner reply with "claim gift" button
+- Admins are excluded from winning
+- Referral system: +0.1% chance per active referral, capped
+- Referral activation requires comments under multiple posts
+- Anti-spam: cooldown, hourly limit, duplicate text protection
+- Pretty HTML messages
+- Commands: /start /profile /chance /winners /refs /activity /rules
+- Admin: /admin /stats /drop
+- Stars: /balance /topup /gifts
+- Safe SQLAlchemy models without fragile relationships/back_populates
+- DB migrations for old Railway schemas
 
-## Railway variables
+## Railway
 
-Обязательно укажи в service с ботом:
-
-```env
-BOT_TOKEN=...
-BOT_USERNAME=marooowbot
-ADMIN_IDS=твой_telegram_id
-CHANNEL_ID=-100...
-DISCUSSION_CHAT_ID=-100...
-DATABASE_URL=postgresql+asyncpg://${{Postgres.PGUSER}}:${{Postgres.PGPASSWORD}}@${{Postgres.PGHOST}}:${{Postgres.PGPORT}}/${{Postgres.PGDATABASE}}
-REDIS_URL=${{Redis.REDIS_URL}}
-```
-
-Важно: у `CHANNEL_ID` и `DISCUSSION_CHAT_ID` должен быть один минус перед `100`.
-
-## Start command
+Start command:
 
 ```bash
 python -m app.main
 ```
 
-## Как взять AUTO_DROP_GIFT_ID
-
-В личке бота, от админа:
-
-```text
-/gifts
-```
-
-Скопируй ID нужного подарка и поставь в Railway:
+Important variables:
 
 ```env
-AUTO_DROP_GIFT_ID=...
+BOT_TOKEN=
+BOT_USERNAME=marooowbot
+ADMIN_IDS=1087968824
+CHANNEL_ID=-1003791124367
+DISCUSSION_CHAT_ID=-1003976665797
+DATABASE_URL=postgresql+asyncpg://${{Postgres.PGUSER}}:${{Postgres.PGPASSWORD}}@${{Postgres.PGHOST}}:${{Postgres.PGPORT}}/${{Postgres.PGDATABASE}}
+REDIS_URL=${{Redis.REDIS_URL}}
+AUTO_DROPS_ENABLED=true
+AUTO_DROP_GIFT_ID=
+CHANCE_DROP_PERCENT=3
 ```
 
-## Как пополнить Stars
+Use one minus before `-100...` IDs.
 
-```text
-/topup 100
-/balance
-```
+## Telegram setup
 
-## Команды пользователя
-
-```text
-/start
-/profile
-/chance
-/winners
-/refs
-/activity
-/rules
-```
-
-## Команды админа
-
-```text
-/admin
-/stats
-/gifts
-/balance
-/topup 100
-```
-
-## Рефералка
-
-В профиле у каждого пользователя будет ссылка:
-
-```text
-https://t.me/marooowbot?start=ref_USER_ID
-```
-
-Реф засчитывается, когда приглашённый:
-
-1. нажал `/start` по ссылке;
-2. подписан на канал;
-3. написал 5 комментариев;
-4. комментарии были под 2 разными постами;
-5. не админ и не забанен.
-
-Каждый активный реф даёт +0.1% к шансу, максимум +3%.
+1. Add bot as admin to channel.
+2. Add bot as admin to discussion group.
+3. Disable privacy mode via @BotFather → /setprivacy → Disable.
+4. Publish a new channel post.
