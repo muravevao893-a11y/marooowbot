@@ -75,6 +75,7 @@ async def create_auto_giveaway(
         gift_id=settings.auto_drop_gift_id,
         winners_count=settings.auto_drop_winners,
         min_participants=0,
+        require_subscription=True,
         channel_id=str(settings.channel_id),
         channel_message_id=channel_message_id,
         discussion_chat_id=str(settings.discussion_chat_id),
