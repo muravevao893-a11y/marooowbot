@@ -29,14 +29,21 @@ async def create_db_schema() -> None:
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
 
-        # Fix for old Railway databases from previous bot versions.
-        # Older schema has giveaways.require_subscription as NOT NULL,
-        # but new code may not include it in INSERT unless DB has default.
+        # Fix old Railway database schema from previous bot versions.
         await conn.execute(
             text(
                 """
                 ALTER TABLE giveaways
                 ADD COLUMN IF NOT EXISTS require_subscription BOOLEAN NOT NULL DEFAULT TRUE;
+                """
+            )
+        )
+
+        await conn.execute(
+            text(
+                """
+                ALTER TABLE giveaways
+                ALTER COLUMN require_subscription SET DEFAULT TRUE;
                 """
             )
         )
@@ -55,7 +62,7 @@ async def create_db_schema() -> None:
             text(
                 """
                 ALTER TABLE giveaways
-                ALTER COLUMN require_subscription SET DEFAULT TRUE;
+                ADD COLUMN IF NOT EXISTS chance_percent DOUBLE PRECISION DEFAULT 3;
                 """
             )
         )
@@ -64,7 +71,17 @@ async def create_db_schema() -> None:
             text(
                 """
                 ALTER TABLE giveaways
-                ADD COLUMN IF NOT EXISTS chance_percent DOUBLE PRECISION;
+                ALTER COLUMN chance_percent SET DEFAULT 3;
+                """
+            )
+        )
+
+        await conn.execute(
+            text(
+                """
+                UPDATE giveaways
+                SET chance_percent = 3
+                WHERE chance_percent IS NULL;
                 """
             )
         )
@@ -81,9 +98,8 @@ async def create_db_schema() -> None:
         await conn.execute(
             text(
                 """
-                UPDATE giveaways
-                SET referral_bonus_enabled = TRUE
-                WHERE referral_bonus_enabled IS NULL;
+                ALTER TABLE giveaways
+                ALTER COLUMN referral_bonus_enabled SET DEFAULT TRUE;
                 """
             )
         )
@@ -91,8 +107,29 @@ async def create_db_schema() -> None:
         await conn.execute(
             text(
                 """
+                UPDATE giveaways
+                SET referral_bonus_enabled = TRUE
+                WHERE referral_bonus_enabled IS NULL;
+                """
+            )
+        )
+
+        # The important fix for your current error.
+        await conn.execute(
+            text(
+                """
                 ALTER TABLE giveaways
-                ALTER COLUMN referral_bonus_enabled SET DEFAULT TRUE;
+                ALTER COLUMN created_at SET DEFAULT NOW();
+                """
+            )
+        )
+
+        await conn.execute(
+            text(
+                """
+                UPDATE giveaways
+                SET created_at = NOW()
+                WHERE created_at IS NULL;
                 """
             )
         )
