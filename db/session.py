@@ -1,26 +1,106 @@
 from __future__ import annotations
 
-from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
+from typing import AsyncIterator
 
+from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 from app.config import get_settings
 from app.db.models import Base
 
+
 settings = get_settings()
-engine = create_async_engine(settings.database_url, pool_pre_ping=True, future=True)
-SessionFactory = async_sessionmaker(bind=engine, expire_on_commit=False, autoflush=False)
+
+engine = create_async_engine(
+    settings.database_url,
+    pool_pre_ping=True,
+    future=True,
+)
+
+SessionLocal = async_sessionmaker(
+    bind=engine,
+    class_=AsyncSession,
+    expire_on_commit=False,
+)
 
 
 async def create_db_schema() -> None:
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
 
+        # Fix for old Railway databases from previous bot versions.
+        # Older schema has giveaways.require_subscription as NOT NULL,
+        # but new code may not include it in INSERT unless DB has default.
+        await conn.execute(
+            text(
+                """
+                ALTER TABLE giveaways
+                ADD COLUMN IF NOT EXISTS require_subscription BOOLEAN NOT NULL DEFAULT TRUE;
+                """
+            )
+        )
+
+        await conn.execute(
+            text(
+                """
+                UPDATE giveaways
+                SET require_subscription = TRUE
+                WHERE require_subscription IS NULL;
+                """
+            )
+        )
+
+        await conn.execute(
+            text(
+                """
+                ALTER TABLE giveaways
+                ALTER COLUMN require_subscription SET DEFAULT TRUE;
+                """
+            )
+        )
+
+        await conn.execute(
+            text(
+                """
+                ALTER TABLE giveaways
+                ADD COLUMN IF NOT EXISTS chance_percent DOUBLE PRECISION;
+                """
+            )
+        )
+
+        await conn.execute(
+            text(
+                """
+                ALTER TABLE giveaways
+                ADD COLUMN IF NOT EXISTS referral_bonus_enabled BOOLEAN NOT NULL DEFAULT TRUE;
+                """
+            )
+        )
+
+        await conn.execute(
+            text(
+                """
+                UPDATE giveaways
+                SET referral_bonus_enabled = TRUE
+                WHERE referral_bonus_enabled IS NULL;
+                """
+            )
+        )
+
+        await conn.execute(
+            text(
+                """
+                ALTER TABLE giveaways
+                ALTER COLUMN referral_bonus_enabled SET DEFAULT TRUE;
+                """
+            )
+        )
+
 
 @asynccontextmanager
 async def session_scope() -> AsyncIterator[AsyncSession]:
-    async with SessionFactory() as session:
+    async with SessionLocal() as session:
         try:
             yield session
             await session.commit()
