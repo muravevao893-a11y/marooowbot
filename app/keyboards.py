@@ -3,92 +3,62 @@ from __future__ import annotations
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 
-def user_home_kb(bot_username: str) -> InlineKeyboardMarkup:
+def main_menu_kb() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="🎁 Активные розыгрыши", callback_data="active")],
-        [InlineKeyboardButton(text="👤 Профиль", callback_data="profile"), InlineKeyboardButton(text="📜 Правила", callback_data="rules")],
+        [InlineKeyboardButton(text='🎲 Мой шанс', callback_data='chance')],
+        [InlineKeyboardButton(text='👤 Профиль', callback_data='profile'), InlineKeyboardButton(text='🏆 Победители', callback_data='winners')],
+        [InlineKeyboardButton(text='🎁 Активные розыгрыши', callback_data='active'), InlineKeyboardButton(text='📜 Правила', callback_data='rules')],
     ])
 
 
-def profile_rules_kb() -> InlineKeyboardMarkup:
+def profile_kb(bot_username: str, telegram_id: int) -> InlineKeyboardMarkup:
+    username = bot_username.lstrip('@')
     return InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="👤 Профиль", callback_data="profile"), InlineKeyboardButton(text="📜 Правила", callback_data="rules")],
+        [InlineKeyboardButton(text='🔗 Пригласить друга', url=f'https://t.me/{username}?start=ref_{telegram_id}')],
+        [InlineKeyboardButton(text='🎲 Мой шанс', callback_data='chance'), InlineKeyboardButton(text='🏆 Топ рефов', callback_data='toprefs')],
+        [InlineKeyboardButton(text='📜 Правила', callback_data='rules')],
     ])
 
 
-from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
+def chance_kb(bot_username: str, telegram_id: int) -> InlineKeyboardMarkup:
+    username = bot_username.lstrip('@')
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text='🔗 Пригласить друга', url=f'https://t.me/{username}?start=ref_{telegram_id}')],
+        [InlineKeyboardButton(text='👤 Профиль', callback_data='profile'), InlineKeyboardButton(text='🏆 Победители', callback_data='winners')],
+    ])
 
 
 def auto_drop_kb(bot_username: str, giveaway_id: int) -> InlineKeyboardMarkup:
-    username = bot_username.lstrip("@")
-
-    return InlineKeyboardMarkup(
-        inline_keyboard=[
-            [
-                InlineKeyboardButton(
-                    text="🤖 Создать профиль",
-                    url=f"https://t.me/{username}?start=drop_{giveaway_id}",
-                )
-            ],
-            [
-                InlineKeyboardButton(
-                    text="📜 Правила",
-                    callback_data="rules",
-                )
-            ],
-        ]
-    )
-
-
-def manual_giveaway_kb(giveaway_id: int, count: int, bot_username: str) -> InlineKeyboardMarkup:
+    username = bot_username.lstrip('@')
     return InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text=f"🎁 Участвовать · {count}", callback_data=f"join:{giveaway_id}")],
-        [InlineKeyboardButton(text="👤 Профиль", url=f"https://t.me/{bot_username}?start=profile"), InlineKeyboardButton(text="📜 Условия", url=f"https://t.me/{bot_username}?start=rules")],
-    ])
-
-
-def after_join_kb(channel_id: int | str | None = None) -> InlineKeyboardMarkup:
-    rows = [[InlineKeyboardButton(text="👤 Мой профиль", callback_data="profile")]]
-    return InlineKeyboardMarkup(inline_keyboard=rows)
-
-
-def admin_home_kb(auto_enabled: bool = True) -> InlineKeyboardMarkup:
-    auto_text = "🟢 Авто-дропы" if auto_enabled else "🔴 Авто-дропы"
-    return InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="🎁 Создать розыгрыш", callback_data="admin:create")],
-        [InlineKeyboardButton(text=auto_text, callback_data="admin:auto")],
-        [InlineKeyboardButton(text="📦 Подарки", callback_data="admin:gifts"), InlineKeyboardButton(text="📊 Статистика", callback_data="admin:stats")],
-        [InlineKeyboardButton(text="❌ Закрыть", callback_data="admin:close")],
-    ])
-
-
-def admin_auto_kb(enabled: bool) -> InlineKeyboardMarkup:
-    return InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="🟢 Включить" if not enabled else "🔴 Выключить", callback_data="admin:auto:toggle")],
-        [InlineKeyboardButton(text="⬅️ Назад", callback_data="admin:home")],
-    ])
-
-
-def admin_preview_kb() -> InlineKeyboardMarkup:
-    return InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="✅ Опубликовать", callback_data="admin:publish")],
-        [InlineKeyboardButton(text="✏️ Заполнить заново", callback_data="admin:create"), InlineKeyboardButton(text="❌ Отменить", callback_data="admin:cancel")],
-    ])
-
-
-def admin_cancel_kb() -> InlineKeyboardMarkup:
-    return InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="❌ Отменить", callback_data="admin:cancel")],
-    ])
-
-
-def result_kb(bot_username: str) -> InlineKeyboardMarkup:
-    return InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="🎁 Новые розыгрыши", url=f"https://t.me/{bot_username}")],
+        [InlineKeyboardButton(text='🤖 Создать профиль', url=f'https://t.me/{username}?start=drop_{giveaway_id}')],
+        [InlineKeyboardButton(text='🎲 Проверить шанс', url=f'https://t.me/{username}?start=chance'), InlineKeyboardButton(text='📜 Правила', callback_data='rules')],
     ])
 
 
 def claim_gift_kb(winner_id: int) -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="🎁 Забрать мишку", callback_data=f"claim:{winner_id}")],
+        [InlineKeyboardButton(text='🎁 Забрать подарок', callback_data=f'claim:{winner_id}')]
+    ])
+
+
+def manual_giveaway_kb(giveaway_id: int, count: int) -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text=f'🎁 Участвовать · {count}', callback_data=f'join:{giveaway_id}')],
+        [InlineKeyboardButton(text='🎲 Мой шанс', callback_data='chance'), InlineKeyboardButton(text='📜 Правила', callback_data='rules')],
+    ])
+
+
+def admin_kb() -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text='🎁 Создать розыгрыш', callback_data='admin:create')],
+        [InlineKeyboardButton(text='⭐ Баланс', callback_data='admin:balance'), InlineKeyboardButton(text='🎁 Gifts', callback_data='admin:gifts')],
+        [InlineKeyboardButton(text='📊 Статистика', callback_data='admin:stats')],
+    ])
+
+
+def admin_preview_kb() -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text='✅ Опубликовать', callback_data='admin:publish')],
+        [InlineKeyboardButton(text='❌ Отменить', callback_data='admin:cancel')],
     ])

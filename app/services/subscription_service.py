@@ -1,15 +1,16 @@
 from __future__ import annotations
 
 from aiogram import Bot
-from aiogram.exceptions import TelegramBadRequest, TelegramForbiddenError
+from aiogram.exceptions import TelegramAPIError
+
+from app.config import Settings
 
 
-ACTIVE_STATUSES = {"creator", "administrator", "member"}
-
-
-async def is_subscribed(bot: Bot, channel_id: int | str, user_id: int) -> bool:
+async def is_subscribed(bot: Bot, settings: Settings, user_id: int) -> bool:
+    if not settings.require_subscription:
+        return True
     try:
-        member = await bot.get_chat_member(channel_id, user_id)
-    except (TelegramBadRequest, TelegramForbiddenError):
+        member = await bot.get_chat_member(settings.channel_id, user_id)
+    except TelegramAPIError:
         return False
-    return member.status in ACTIVE_STATUSES
+    return member.status in {'creator', 'administrator', 'member'}

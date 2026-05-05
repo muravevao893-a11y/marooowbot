@@ -1,36 +1,33 @@
 from __future__ import annotations
 
+from datetime import timedelta
+
+from sqlalchemy import func, select
 from aiogram import F, Router
-from aiogram.filters import Command, CommandObject
+from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.types import CallbackQuery, Message
-from sqlalchemy import func, select
 
 from app.config import get_settings
-from app.db.models import Giveaway, GiveawayStatus, User
+from app.db.models import ChanceAttempt, Giveaway, GiveawayStatus, GiveawayType, GiveawayWinner, Referral, ReferralStatus, User
 from app.db.session import session_scope
-from app.jobs.scheduler import schedule_giveaway_finish
-from app.keyboards import admin_auto_kb, admin_cancel_kb, admin_home_kb, admin_preview_kb
-from app.services.gift_service import format_available_gifts
-from app.services.giveaway_service import create_manual_giveaway, publish_manual_giveaway
-from app.services.runtime import auto_drops_enabled, set_auto_drops_enabled
-from app.services.user_service import ban_user
-from app.texts import admin_home_text, create_preview_text
-from app.utils.tg_html import h
+from app.keyboards import admin_kb, admin_preview_kb, manual_giveaway_kb
+from app.texts import admin_home_text, admin_stats_text, create_preview_text, manual_giveaway_text
+from app.utils.time import utcnow
 
-router = Router(name="admin")
+router = Router(name='admin')
 settings = get_settings()
 
 
-class GiveawayCreate(StatesGroup):
+class CreateGiveaway(StatesGroup):
     title = State()
+    description = State()
     prize = State()
-    gift_id = State()
     winners = State()
     duration = State()
-    description = State()
-    photo = State()
+    gift_id = State()
+    image = State()
     preview = State()
 
 
@@ -38,336 +35,181 @@ def is_admin(user_id: int | None) -> bool:
     return bool(user_id and user_id in settings.admin_ids)
 
 
-async def deny(message_or_callback: Message | CallbackQuery) -> None:
-    if isinstance(message_or_callback, CallbackQuery):
-        await message_or_callback.answer("Не админ.", show_alert=True)
-    else:
-        await message_or_callback.answer("Не админ.")
-
-
-@router.message(Command("admin"))
-async def cmd_admin(message: Message) -> None:
+@router.message(Command('admin'))
+async def admin_home(message: Message) -> None:
     if not is_admin(message.from_user.id if message.from_user else None):
-        await deny(message)
+        await message.answer('⛔ <b>Не админ.</b>')
         return
-    await message.answer(admin_home_text(), reply_markup=admin_home_kb(auto_drops_enabled()), parse_mode="HTML")
+    await message.answer(admin_home_text(), reply_markup=admin_kb())
 
 
-@router.callback_query(F.data == "admin:home")
-async def cb_admin_home(callback: CallbackQuery, state: FSMContext) -> None:
+
+
+@router.message(Command('stats'))
+async def admin_stats_cmd(message: Message) -> None:
+    if not is_admin(message.from_user.id if message.from_user else None):
+        await message.answer('⛔ <b>Не админ.</b>')
+        return
+    async with session_scope() as session:
+        users = (await session.execute(select(func.count(User.id)))).scalar_one() or 0
+        active = (await session.execute(select(func.count(Giveaway.id)).where(Giveaway.status == GiveawayStatus.ACTIVE.value))).scalar_one() or 0
+        winners = (await session.execute(select(func.count(GiveawayWinner.id)))).scalar_one() or 0
+        refs = (await session.execute(select(func.count(Referral.id)).where(Referral.status == ReferralStatus.ACTIVE.value))).scalar_one() or 0
+        # Approximate last 24h by DB timestamp; enough for admin overview.
+        from app.utils.time import utcnow
+        from datetime import timedelta as _td
+        attempts = (await session.execute(select(func.count(ChanceAttempt.id)).where(ChanceAttempt.created_at >= utcnow() - _td(hours=24)))).scalar_one() or 0
+    await message.answer(admin_stats_text(int(users), int(active), int(winners), int(refs), int(attempts)))
+
+
+@router.callback_query(F.data == 'admin:stats')
+async def admin_stats_cb(callback: CallbackQuery) -> None:
     if not is_admin(callback.from_user.id):
-        await deny(callback)
+        await callback.answer('Не админ', show_alert=True)
+        return
+    async with session_scope() as session:
+        users = (await session.execute(select(func.count(User.id)))).scalar_one() or 0
+        active = (await session.execute(select(func.count(Giveaway.id)).where(Giveaway.status == GiveawayStatus.ACTIVE.value))).scalar_one() or 0
+        winners = (await session.execute(select(func.count(GiveawayWinner.id)))).scalar_one() or 0
+        refs = (await session.execute(select(func.count(Referral.id)).where(Referral.status == ReferralStatus.ACTIVE.value))).scalar_one() or 0
+        from app.utils.time import utcnow
+        from datetime import timedelta as _td
+        attempts = (await session.execute(select(func.count(ChanceAttempt.id)).where(ChanceAttempt.created_at >= utcnow() - _td(hours=24)))).scalar_one() or 0
+    await callback.message.answer(admin_stats_text(int(users), int(active), int(winners), int(refs), int(attempts)))
+    await callback.answer()
+
+
+@router.callback_query(F.data == 'admin:create')
+async def start_create(callback: CallbackQuery, state: FSMContext) -> None:
+    if not is_admin(callback.from_user.id):
+        await callback.answer('Не админ', show_alert=True)
         return
     await state.clear()
-    await callback.message.edit_text(admin_home_text(), reply_markup=admin_home_kb(auto_drops_enabled()), parse_mode="HTML")
+    await state.set_state(CreateGiveaway.title)
+    await callback.message.answer('<b>Создание розыгрыша</b>\n━━━━━━━━━━━━━━\n\nОтправь название.')
     await callback.answer()
 
 
-@router.callback_query(F.data == "admin:close")
-async def cb_admin_close(callback: CallbackQuery) -> None:
-    if not is_admin(callback.from_user.id):
-        await deny(callback)
-        return
-    await callback.message.delete()
-    await callback.answer()
-
-
-@router.callback_query(F.data == "admin:auto")
-async def cb_admin_auto(callback: CallbackQuery) -> None:
-    if not is_admin(callback.from_user.id):
-        await deny(callback)
-        return
-    enabled = auto_drops_enabled()
-    text = (
-        "<b>Авто-шансы</b>\n\n"
-        f"Статус: <b>{'включены' if enabled else 'выключены'}</b>\n"
-        f"Шанс: <b>{settings.chance_drop_percent:g}%</b> за коммент\n"
-        f"Приз: <b>{h(settings.auto_drop_prize)}</b>\n\n"
-        "Под каждым новым постом бот пишет коммент. Каждый зарегистрированный комментатор может выбить подарок сразу."
-    )
-    await callback.message.edit_text(text, reply_markup=admin_auto_kb(enabled), parse_mode="HTML")
-    await callback.answer()
-
-
-@router.callback_query(F.data == "admin:auto:toggle")
-async def cb_admin_auto_toggle(callback: CallbackQuery) -> None:
-    if not is_admin(callback.from_user.id):
-        await deny(callback)
-        return
-    new_value = not auto_drops_enabled()
-    set_auto_drops_enabled(new_value)
-    await callback.message.edit_text(
-        f"<b>Авто-шансы</b>\n\nСтатус: <b>{'включены' if new_value else 'выключены'}</b>",
-        reply_markup=admin_auto_kb(new_value),
-        parse_mode="HTML",
-    )
-    await callback.answer("Готово")
-
-
-@router.callback_query(F.data == "admin:create")
-async def cb_create_start(callback: CallbackQuery, state: FSMContext) -> None:
-    if not is_admin(callback.from_user.id):
-        await deny(callback)
-        return
-    await state.clear()
-    await state.set_state(GiveawayCreate.title)
-    await callback.message.edit_text(
-        "<b>Новый розыгрыш</b>\n\nНапиши название.\n\nПример: <code>РОЗЫГРЫВАЮ 15 МИШЕК</code>",
-        reply_markup=admin_cancel_kb(),
-        parse_mode="HTML",
-    )
-    await callback.answer()
-
-
-@router.message(GiveawayCreate.title)
+@router.message(CreateGiveaway.title)
 async def create_title(message: Message, state: FSMContext) -> None:
-    if not is_admin(message.from_user.id if message.from_user else None):
-        return
-    title = (message.text or "").strip()
-    if len(title) < 3:
-        await message.answer("Название слишком короткое.")
-        return
-    await state.update_data(title=title[:256])
-    await state.set_state(GiveawayCreate.prize)
-    await message.answer("Теперь приз.\n\nПример: <code>15 мишек</code>", parse_mode="HTML", reply_markup=admin_cancel_kb())
+    await state.update_data(title=message.text or 'Розыгрыш')
+    await state.set_state(CreateGiveaway.description)
+    await message.answer('Отправь описание. Если не нужно — напиши <code>-</code>.')
 
 
-@router.message(GiveawayCreate.prize)
+@router.message(CreateGiveaway.description)
+async def create_description(message: Message, state: FSMContext) -> None:
+    text = message.text or '-'
+    await state.update_data(description=None if text.strip() == '-' else text)
+    await state.set_state(CreateGiveaway.prize)
+    await message.answer('Какой приз? Например: <code>мишка</code>.')
+
+
+@router.message(CreateGiveaway.prize)
 async def create_prize(message: Message, state: FSMContext) -> None:
-    if not is_admin(message.from_user.id if message.from_user else None):
-        return
-    prize = (message.text or "").strip()
-    if len(prize) < 2:
-        await message.answer("Приз слишком короткий.")
-        return
-    await state.update_data(prize_name=prize[:256])
-    await state.set_state(GiveawayCreate.gift_id)
-    await message.answer(
-        "Теперь <code>gift_id</code> для авто-отправки Telegram Gift.\n\n"
-        "Напиши ID подарка или <code>-</code>, если выдашь руками.\n"
-        "Список ID можно посмотреть командой /gifts.",
-        parse_mode="HTML",
-        reply_markup=admin_cancel_kb(),
-    )
+    await state.update_data(prize=message.text or 'мишка')
+    await state.set_state(CreateGiveaway.winners)
+    await message.answer('Сколько победителей? Например: <code>1</code>.')
 
 
-@router.message(GiveawayCreate.gift_id)
-async def create_gift_id(message: Message, state: FSMContext) -> None:
-    if not is_admin(message.from_user.id if message.from_user else None):
-        return
-    raw = (message.text or "").strip()
-    gift_id = None if raw in {"-", "нет", "skip"} else raw
-    await state.update_data(gift_id=gift_id)
-    await state.set_state(GiveawayCreate.winners)
-    await message.answer("Сколько победителей?\n\nПример: <code>15</code>", parse_mode="HTML", reply_markup=admin_cancel_kb())
-
-
-@router.message(GiveawayCreate.winners)
+@router.message(CreateGiveaway.winners)
 async def create_winners(message: Message, state: FSMContext) -> None:
-    if not is_admin(message.from_user.id if message.from_user else None):
-        return
     try:
-        winners = int((message.text or "").strip())
+        winners = max(1, min(100, int((message.text or '1').strip())))
     except ValueError:
-        await message.answer("Нужно число.")
+        await message.answer('Нужно число. Например: <code>1</code>.')
         return
-    if not 1 <= winners <= 100:
-        await message.answer("Поставь от 1 до 100.")
-        return
-    await state.update_data(winners_count=winners)
-    await state.set_state(GiveawayCreate.duration)
-    await message.answer("Сколько минут идет розыгрыш?\n\nПример: <code>60</code>", parse_mode="HTML", reply_markup=admin_cancel_kb())
+    await state.update_data(winners=winners)
+    await state.set_state(CreateGiveaway.duration)
+    await message.answer('Сколько минут длится розыгрыш? Например: <code>60</code>.')
 
 
-@router.message(GiveawayCreate.duration)
+@router.message(CreateGiveaway.duration)
 async def create_duration(message: Message, state: FSMContext) -> None:
-    if not is_admin(message.from_user.id if message.from_user else None):
-        return
     try:
-        duration = int((message.text or "").strip())
+        duration = max(1, min(10080, int((message.text or '60').strip())))
     except ValueError:
-        await message.answer("Нужно число минут.")
-        return
-    if not 1 <= duration <= 10080:
-        await message.answer("Поставь от 1 минуты до 7 дней.")
+        await message.answer('Нужно число минут. Например: <code>60</code>.')
         return
     await state.update_data(duration_min=duration)
-    await state.set_state(GiveawayCreate.description)
-    await message.answer(
-        "Напиши условия/описание.\n\n"
-        "Например: <code>Подписка + кнопка. Победителей выберет бот.</code>\n\n"
-        "Можно написать <code>-</code>, чтобы пропустить.",
-        parse_mode="HTML",
-        reply_markup=admin_cancel_kb(),
-    )
+    await state.set_state(CreateGiveaway.gift_id)
+    await message.answer('Вставь <code>gift_id</code> подарка. Если ручная выдача — напиши <code>-</code>. Получить список: /gifts')
 
 
-@router.message(GiveawayCreate.description)
-async def create_description(message: Message, state: FSMContext) -> None:
-    if not is_admin(message.from_user.id if message.from_user else None):
-        return
-    raw = (message.text or "").strip()
-    description = None if raw in {"-", "нет", "skip"} else raw[:1500]
-    await state.update_data(description=description)
-    await state.set_state(GiveawayCreate.photo)
-    await message.answer(
-        "Теперь картинка для розыгрыша.\n\n"
-        "Отправь фото или напиши <code>-</code>, чтобы пост был без фото.",
-        parse_mode="HTML",
-        reply_markup=admin_cancel_kb(),
-    )
+@router.message(CreateGiveaway.gift_id)
+async def create_gift_id(message: Message, state: FSMContext) -> None:
+    text = (message.text or '-').strip()
+    await state.update_data(gift_id=None if text == '-' else text)
+    await state.set_state(CreateGiveaway.image)
+    await message.answer('Отправь картинку для розыгрыша или напиши <code>-</code>, если без картинки.')
 
 
-@router.message(GiveawayCreate.photo)
-async def create_photo(message: Message, state: FSMContext) -> None:
-    if not is_admin(message.from_user.id if message.from_user else None):
-        return
-    image_file_id = None
+@router.message(CreateGiveaway.image)
+async def create_image(message: Message, state: FSMContext) -> None:
+    file_id = None
     if message.photo:
-        image_file_id = message.photo[-1].file_id
+        file_id = message.photo[-1].file_id
+    elif message.text and message.text.strip() == '-':
+        file_id = None
     else:
-        raw = (message.text or "").strip()
-        if raw not in {"-", "нет", "skip"}:
-            await message.answer("Нужно фото или <code>-</code>.", parse_mode="HTML")
-            return
-    await state.update_data(image_file_id=image_file_id)
+        await message.answer('Отправь фото или <code>-</code>.')
+        return
+    await state.update_data(image_file_id=file_id)
     data = await state.get_data()
-    await state.set_state(GiveawayCreate.preview)
+    await state.set_state(CreateGiveaway.preview)
     await message.answer(
         create_preview_text(
-            data["title"],
-            data["prize_name"],
-            data["winners_count"],
-            data["duration_min"],
-            data.get("description"),
-            data.get("gift_id"),
+            data['title'], data['prize'], data['winners'], data['duration_min'], data.get('description'), data.get('gift_id')
         ),
-        parse_mode="HTML",
         reply_markup=admin_preview_kb(),
     )
 
 
-@router.callback_query(F.data == "admin:publish")
-async def cb_publish(callback: CallbackQuery, state: FSMContext) -> None:
+@router.callback_query(F.data == 'admin:cancel')
+async def create_cancel(callback: CallbackQuery, state: FSMContext) -> None:
+    await state.clear()
+    await callback.message.answer('❌ <b>Отменено.</b>')
+    await callback.answer()
+
+
+@router.callback_query(F.data == 'admin:publish')
+async def create_publish(callback: CallbackQuery, state: FSMContext) -> None:
     if not is_admin(callback.from_user.id):
-        await deny(callback)
+        await callback.answer('Не админ', show_alert=True)
         return
     data = await state.get_data()
-    required = {"title", "prize_name", "winners_count", "duration_min"}
-    if not required.issubset(data):
-        await callback.answer("Черновик пустой, создай заново.", show_alert=True)
+    if not data:
+        await callback.answer('Нет данных', show_alert=True)
         return
 
+    ends_at = utcnow() + timedelta(minutes=int(data['duration_min']))
     async with session_scope() as session:
-        giveaway = await create_manual_giveaway(
-            session,
-            settings,
-            title=data["title"],
-            description=data.get("description"),
-            prize_name=data["prize_name"],
-            gift_id=data.get("gift_id"),
-            winners_count=int(data["winners_count"]),
-            duration_minutes=int(data["duration_min"]),
-            image_file_id=data.get("image_file_id"),
+        giveaway = Giveaway(
+            type=GiveawayType.MANUAL.value,
+            status=GiveawayStatus.ACTIVE.value,
+            title=data['title'],
+            description=data.get('description'),
+            prize_name=data['prize'],
+            gift_id=data.get('gift_id'),
+            winners_count=int(data['winners']),
+            min_participants=1,
+            channel_id=str(settings.channel_id),
+            starts_at=utcnow(),
+            ends_at=ends_at,
             created_by=callback.from_user.id,
+            image_file_id=data.get('image_file_id'),
         )
-        await publish_manual_giveaway(callback.bot, session, settings, giveaway)
-        schedule_giveaway_finish(giveaway.id, giveaway.ends_at)
+        session.add(giveaway)
+        await session.flush()
+
+        text = manual_giveaway_text(giveaway.title, giveaway.description, giveaway.prize_name, giveaway.winners_count, giveaway.ends_at, 0)
+        if giveaway.image_file_id:
+            sent = await callback.bot.send_photo(settings.channel_id, photo=giveaway.image_file_id, caption=text, reply_markup=manual_giveaway_kb(giveaway.id, 0))
+        else:
+            sent = await callback.bot.send_message(settings.channel_id, text, reply_markup=manual_giveaway_kb(giveaway.id, 0))
+        giveaway.channel_message_id = sent.message_id
+        await session.flush()
 
     await state.clear()
-    await callback.message.edit_text("Опубликовал. Розыгрыш запущен.", parse_mode="HTML")
-    await callback.answer("Опубликовано")
-
-
-@router.callback_query(F.data == "admin:cancel")
-async def cb_cancel(callback: CallbackQuery, state: FSMContext) -> None:
-    if not is_admin(callback.from_user.id):
-        await deny(callback)
-        return
-    await state.clear()
-    await callback.message.edit_text("Отменил.", reply_markup=admin_home_kb(auto_drops_enabled()))
+    await callback.message.answer('✅ <b>Розыгрыш опубликован.</b>')
     await callback.answer()
-
-
-@router.message(Command("cancel"))
-async def cmd_cancel(message: Message, state: FSMContext) -> None:
-    if not is_admin(message.from_user.id if message.from_user else None):
-        await deny(message)
-        return
-    await state.clear()
-    await message.answer("Отменил.")
-
-
-@router.message(Command("gifts"))
-async def cmd_gifts(message: Message) -> None:
-    if not is_admin(message.from_user.id if message.from_user else None):
-        await deny(message)
-        return
-    await message.answer("Загружаю gifts...")
-    text = await format_available_gifts(message.bot)
-    await message.answer(text, parse_mode="HTML")
-
-
-@router.callback_query(F.data == "admin:gifts")
-async def cb_gifts(callback: CallbackQuery) -> None:
-    if not is_admin(callback.from_user.id):
-        await deny(callback)
-        return
-    await callback.answer("Загружаю")
-    text = await format_available_gifts(callback.bot)
-    await callback.message.answer(text, parse_mode="HTML")
-
-
-@router.callback_query(F.data == "admin:stats")
-async def cb_stats(callback: CallbackQuery) -> None:
-    if not is_admin(callback.from_user.id):
-        await deny(callback)
-        return
-    async with session_scope() as session:
-        users_count = int((await session.execute(select(func.count(User.id)))).scalar_one())
-        giveaways_count = int((await session.execute(select(func.count(Giveaway.id)))).scalar_one())
-        active_count = int((await session.execute(select(func.count(Giveaway.id)).where(Giveaway.status == GiveawayStatus.ACTIVE.value))).scalar_one())
-    await callback.message.answer(
-        "<b>Статистика</b>\n\n"
-        f"Пользователей: <b>{users_count}</b>\n"
-        f"Розыгрышей всего: <b>{giveaways_count}</b>\n"
-        f"Активных: <b>{active_count}</b>",
-        parse_mode="HTML",
-    )
-    await callback.answer()
-
-
-@router.message(Command("ban"))
-async def cmd_ban(message: Message, command: CommandObject) -> None:
-    if not is_admin(message.from_user.id if message.from_user else None):
-        await deny(message)
-        return
-    if not command.args:
-        await message.answer("Формат: /ban 123456789")
-        return
-    try:
-        telegram_id = int(command.args.strip())
-    except ValueError:
-        await message.answer("Нужен numeric telegram_id.")
-        return
-    async with session_scope() as session:
-        await ban_user(session, telegram_id, True)
-    await message.answer(f"Забанил <code>{telegram_id}</code>.", parse_mode="HTML")
-
-
-@router.message(Command("unban"))
-async def cmd_unban(message: Message, command: CommandObject) -> None:
-    if not is_admin(message.from_user.id if message.from_user else None):
-        await deny(message)
-        return
-    if not command.args:
-        await message.answer("Формат: /unban 123456789")
-        return
-    try:
-        telegram_id = int(command.args.strip())
-    except ValueError:
-        await message.answer("Нужен numeric telegram_id.")
-        return
-    async with session_scope() as session:
-        await ban_user(session, telegram_id, False)
-    await message.answer(f"Разбанил <code>{telegram_id}</code>.", parse_mode="HTML")
