@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, timezone
 
 from sqlalchemy import (
     BigInteger,
@@ -20,6 +20,10 @@ from sqlalchemy.sql import func
 
 class Base(DeclarativeBase):
     pass
+
+
+def utc_now_dt() -> datetime:
+    return datetime.now(timezone.utc)
 
 
 class GiveawayType:
@@ -64,7 +68,7 @@ class User(Base):
     wins_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0, server_default=text("0"))
 
     last_seen_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now_dt, server_default=func.now(), nullable=False)
     updated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), onupdate=func.now(), nullable=True)
 
 
@@ -97,7 +101,7 @@ class Giveaway(Base):
     starts_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     ends_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     created_by: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now_dt, server_default=func.now(), nullable=False)
 
 
 class GiveawayEntry(Base):
@@ -109,7 +113,7 @@ class GiveawayEntry(Base):
     telegram_id: Mapped[int] = mapped_column(BigInteger, index=True, nullable=False)
     source: Mapped[str] = mapped_column(String(32), nullable=False, default=EntrySource.BUTTON, server_default=text("'button'"))
     comment_message_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now_dt, server_default=func.now(), nullable=False)
 
     __table_args__ = (
         UniqueConstraint("giveaway_id", "user_id", name="uq_giveaway_entry_user"),
@@ -129,7 +133,7 @@ class ChanceAttempt(Base):
     won: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False, server_default=text("false"))
     skipped_reason: Mapped[str | None] = mapped_column(String(255), nullable=True)
     chance_percent: Mapped[float] = mapped_column(Float, nullable=False, default=0, server_default=text("0"))
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now_dt, server_default=func.now(), nullable=False)
 
 
 class GiveawayWinner(Base):
@@ -144,7 +148,7 @@ class GiveawayWinner(Base):
     comment_message_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
     delivery_status: Mapped[str] = mapped_column(String(32), nullable=False, default=DeliveryStatus.PENDING, server_default=text("'pending'"))
     delivery_error: Mapped[str | None] = mapped_column(Text, nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now_dt, server_default=func.now(), nullable=False)
     claimed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     sent_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
@@ -159,7 +163,7 @@ class Referral(Base):
     comments_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0, server_default=text("0"))
     unique_posts_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0, server_default=text("0"))
     bonus_percent: Mapped[float] = mapped_column(Float, nullable=False, default=0, server_default=text("0"))
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now_dt, server_default=func.now(), nullable=False)
     activated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
     __table_args__ = (
@@ -175,7 +179,7 @@ class ReferralActivity(Base):
     referred_user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
     discussion_root_message_id: Mapped[int] = mapped_column(Integer, index=True, nullable=False)
     comment_message_id: Mapped[int] = mapped_column(Integer, unique=True, nullable=False)
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now_dt, server_default=func.now(), nullable=False)
 
 
 class AdminLog(Base):
@@ -185,4 +189,4 @@ class AdminLog(Base):
     admin_id: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
     action: Mapped[str] = mapped_column(String(255), nullable=False)
     payload: Mapped[str | None] = mapped_column(Text, nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now_dt, server_default=func.now(), nullable=False)
