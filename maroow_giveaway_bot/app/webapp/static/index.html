@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <title>&marooow Mini App</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/app/static/styles.css" />
+</head>
+<body>
+  <div class="noise"></div>
+  <div class="app-shell">
+    <header class="app-header">
+      <div class="brand-block">
+        <div class="brand-row">
+          <div class="brand-mark">&</div>
+          <div>
+            <div class="brand-title">marooow</div>
+            <div class="brand-subtitle">кейсы · мини‑игры · подарки</div>
+          </div>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button class="chip ref" id="copyRef" type="button" aria-label="Скопировать реферальную ссылку">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10.6 13.4a1 1 0 0 1 0-1.4l3.5-3.5a3 3 0 0 1 4.2 4.2l-2 2a3 3 0 0 1-4.2 0 1 1 0 1 1 1.4-1.4 1 1 0 0 0 1.4 0l2-2a1 1 0 1 0-1.4-1.4L12 13.4a1 1 0 0 1-1.4 0Zm2.8-2.8a1 1 0 0 1 0 1.4l-3.5 3.5a3 3 0 0 1-4.2-4.2l2-2a3 3 0 0 1 4.2 0 1 1 0 0 1-1.4 1.4 1 1 0 0 0-1.4 0l-2 2a1 1 0 0 0 1.4 1.4l3.5-3.5a1 1 0 0 1 1.4 0Z"/></svg>
+          <span>Реф.</span>
+        </button>
+        <button class="chip balance" id="openTopup" type="button" aria-label="Пополнить баланс"><span class="star">★</span><b id="stars">0</b><span class="plus">+</span></button>
+      </div>
+    </header>
+
+    <main id="view" class="view"></main>
+
+    <nav class="tabs" aria-label="Навигация">
+      <button data-tab="free" class="active" type="button"><span class="tab-ico gift"></span><small>Бонусы</small></button>
+      <button data-tab="pass" type="button"><span class="tab-ico pass"></span><small>Пропуск</small></button>
+      <button data-tab="games" type="button"><span class="tab-ico games"></span><small>Игры</small></button>
+      <button data-tab="cases" type="button"><span class="tab-ico cases"></span><small>Кейсы</small></button>
+      <button data-tab="profile" type="button"><span class="tab-ico profile"></span><small>Профиль</small></button>
+    </nav>
+  </div>
+
+  <div class="sheet" id="topupSheet" aria-hidden="true">
+    <div class="sheet-backdrop" data-close-sheet></div>
+    <div class="sheet-card">
+      <div class="sheet-head"><h2>Пополнение баланса</h2><button class="icon-btn" data-close-sheet type="button">×</button></div>
+      <div class="pay-tabs"><button class="active" data-pay="stars">★ Stars</button><button data-pay="ton">TON</button><button data-pay="send">Send</button><button data-pay="gifts">Gifts</button></div>
+      <div id="topupContent"></div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+  <script src="/app/static/app.js"></script>
+</body>
+</html>
