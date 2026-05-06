@@ -89,6 +89,9 @@ class Settings:
     same_comment_cooldown_minutes: int
     proof_channel_enabled: bool
 
+    mini_app_url: str | None
+    webapp_enabled: bool
+
     gift_text: str
 
 
@@ -127,5 +130,7 @@ def get_settings() -> Settings:
         min_comment_length=max(0, _int(os.getenv("MIN_COMMENT_LENGTH"), 2)),
         same_comment_cooldown_minutes=max(0, _int(os.getenv("SAME_COMMENT_COOLDOWN_MINUTES"), 60)),
         proof_channel_enabled=_bool(os.getenv("PROOF_CHANNEL_ENABLED"), True),
+        mini_app_url=(os.getenv("MINI_APP_URL") or os.getenv("WEBAPP_URL") or "").strip() or None,
+        webapp_enabled=_bool(os.getenv("WEBAPP_ENABLED"), True),
         gift_text=os.getenv("GIFT_TEXT", "Подарок от &marooow 🎁").strip(),
     )

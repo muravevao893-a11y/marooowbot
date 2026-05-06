@@ -15,6 +15,7 @@ from app.config import get_settings
 from app.db.session import create_db_schema
 from app.handlers import admin, giveaways, payments, user
 from app.jobs.scheduler import init_scheduler, restore_active_giveaways
+from app.webapp.server import setup_webapp_routes
 
 
 async def _make_storage(redis_url: str):
@@ -30,6 +31,7 @@ async def run_webhook(dp: Dispatcher, bot: Bot) -> None:
     await bot.set_webhook(settings.webhook_full_url, drop_pending_updates=False)
 
     app = web.Application()
+    setup_webapp_routes(app, bot, settings)
     SimpleRequestHandler(dispatcher=dp, bot=bot).register(app, path=settings.webhook_path)
     setup_application(app, dp, bot=bot)
 
@@ -39,6 +41,21 @@ async def run_webhook(dp: Dispatcher, bot: Bot) -> None:
     await site.start()
     logging.info("Webhook started: %s", settings.webhook_full_url)
     await asyncio.Event().wait()
+
+
+async def start_webapp_server(bot: Bot) -> web.AppRunner | None:
+    settings = get_settings()
+    if not settings.webapp_enabled:
+        return None
+
+    app = web.Application()
+    setup_webapp_routes(app, bot, settings)
+    runner = web.AppRunner(app)
+    await runner.setup()
+    site = web.TCPSite(runner, settings.webapp_host, settings.webapp_port)
+    await site.start()
+    logging.info("Mini App server started on %s:%s", settings.webapp_host, settings.webapp_port)
+    return runner
 
 
 async def main() -> None:
@@ -66,6 +83,7 @@ async def main() -> None:
     if settings.webhook_full_url:
         await run_webhook(dp, bot)
     else:
+        await start_webapp_server(bot)
         await bot.delete_webhook(drop_pending_updates=False)
         logging.info("Polling started")
         await dp.start_polling(

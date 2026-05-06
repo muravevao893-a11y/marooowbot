@@ -1,32 +1,27 @@
-# maroow giveaway bot — final
+# &marooow Telegram Bot + Mini App
 
-Railway-ready Telegram bot for channel comment drops.
+Railway-ready проект: Telegram bot + WebApp/Mini App.
 
-## Features
+## Что есть
 
-- Auto-drop message under every new channel post in linked discussion chat
-- Chance-based teddy bear drop per valid comment
-- Winner reply with "claim gift" button
-- Admins are excluded from winning
-- Referral system: +0.1% chance per active referral, capped
-- Referral activation requires comments under multiple posts
-- Anti-spam: cooldown, hourly limit, duplicate text protection
-- Pretty HTML messages
-- Commands: /start /profile /chance /winners /refs /activity /rules
-- Admin: /admin /stats /drop
-- Stars: /balance /topup /gifts
-- Safe SQLAlchemy models without fragile relationships/back_populates
-- DB migrations for old Railway schemas
+- авто-дроп под каждым новым постом канала;
+- шанс выпадения подарка за комментарий;
+- рефералка +0.1% к шансу за активного рефа;
+- антиспам/cooldown;
+- выдача подарков через Telegram Gifts;
+- /topup, /balance, /gifts;
+- Mini App с вкладками: Бесплатно, Пропуск, Игры, Кейсы, Профиль;
+- ежедневный бонус внутри Mini App;
+- профиль, шанс, реф-ссылка, история победителей, лидерборды;
+- безопасные миграции для старой Railway-базы.
 
-## Railway
-
-Start command:
+## Railway Start Command
 
 ```bash
 python -m app.main
 ```
 
-Important variables:
+## Важные переменные
 
 ```env
 BOT_TOKEN=
@@ -36,16 +31,15 @@ CHANNEL_ID=-1003791124367
 DISCUSSION_CHAT_ID=-1003976665797
 DATABASE_URL=postgresql+asyncpg://${{Postgres.PGUSER}}:${{Postgres.PGPASSWORD}}@${{Postgres.PGHOST}}:${{Postgres.PGPORT}}/${{Postgres.PGDATABASE}}
 REDIS_URL=${{Redis.REDIS_URL}}
-AUTO_DROPS_ENABLED=true
-AUTO_DROP_GIFT_ID=
-CHANCE_DROP_PERCENT=3
+MINI_APP_URL=https://YOUR-RAILWAY-DOMAIN.up.railway.app/app
+WEBAPP_ENABLED=true
 ```
 
-Use one minus before `-100...` IDs.
+После деплоя зайди в BotFather → Bot Settings → Menu Button → Configure menu button и поставь URL из `MINI_APP_URL`.
 
-## Telegram setup
+## Проверка
 
-1. Add bot as admin to channel.
-2. Add bot as admin to discussion group.
-3. Disable privacy mode via @BotFather → /setprivacy → Disable.
-4. Publish a new channel post.
+- `https://YOUR-RAILWAY-DOMAIN.up.railway.app/api/health`
+- `/start` в боте
+- кнопка `🚀 Открыть Mini App`
+

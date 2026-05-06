@@ -48,6 +48,14 @@ async def create_db_schema() -> None:
             "ALTER TABLE users ADD COLUMN IF NOT EXISTS wins_count INTEGER NOT NULL DEFAULT 0",
             "ALTER TABLE users ADD COLUMN IF NOT EXISTS last_seen_at TIMESTAMP WITH TIME ZONE",
             "ALTER TABLE users ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITH TIME ZONE",
+
+            "ALTER TABLE users ADD COLUMN IF NOT EXISTS app_stars INTEGER NOT NULL DEFAULT 0",
+            "UPDATE users SET app_stars = 0 WHERE app_stars IS NULL",
+            "ALTER TABLE users ADD COLUMN IF NOT EXISTS exp INTEGER NOT NULL DEFAULT 0",
+            "UPDATE users SET exp = 0 WHERE exp IS NULL",
+            "ALTER TABLE users ADD COLUMN IF NOT EXISTS level INTEGER NOT NULL DEFAULT 1",
+            "UPDATE users SET level = 1 WHERE level IS NULL",
+            "ALTER TABLE users ADD COLUMN IF NOT EXISTS last_daily_at TIMESTAMP WITH TIME ZONE",
             "ALTER TABLE users ALTER COLUMN created_at SET DEFAULT NOW()",
             "UPDATE users SET created_at = NOW() WHERE created_at IS NULL",
 
@@ -80,6 +88,8 @@ async def create_db_schema() -> None:
             "ALTER TABLE referral_activity ALTER COLUMN created_at SET DEFAULT NOW()",
             "UPDATE referral_activity SET created_at = NOW() WHERE created_at IS NULL",
 
+
+            "CREATE TABLE IF NOT EXISTS miniapp_transactions (id SERIAL PRIMARY KEY, telegram_id BIGINT NOT NULL, kind VARCHAR(64) NOT NULL, amount INTEGER NOT NULL DEFAULT 0, payload TEXT, created_at TIMESTAMPTZ NOT NULL DEFAULT NOW())",
             "ALTER TABLE admin_logs ALTER COLUMN created_at SET DEFAULT NOW()",
             "UPDATE admin_logs SET created_at = NOW() WHERE created_at IS NULL",
         ]

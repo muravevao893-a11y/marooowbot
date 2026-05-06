@@ -1,12 +1,17 @@
 from __future__ import annotations
 
-from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
+from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo
+
+from app.config import get_settings
 
 
 def main_menu_kb() -> InlineKeyboardMarkup:
-    return InlineKeyboardMarkup(
-        inline_keyboard=[
-            [InlineKeyboardButton(text="🎁 Активные дропы", callback_data="active")],
+    settings = get_settings()
+    rows = []
+    if settings.mini_app_url:
+        rows.append([InlineKeyboardButton(text="🚀 Открыть Mini App", web_app=WebAppInfo(url=settings.mini_app_url))])
+    rows.append([InlineKeyboardButton(text="🎁 Активные дропы", callback_data="active")])
+    rows.extend([
             [
                 InlineKeyboardButton(text="👤 Профиль", callback_data="profile"),
                 InlineKeyboardButton(text="🎲 Мой шанс", callback_data="chance"),
@@ -17,6 +22,8 @@ def main_menu_kb() -> InlineKeyboardMarkup:
             ],
         ]
     )
+
+    return InlineKeyboardMarkup(inline_keyboard=rows)
 
 
 def profile_kb(bot_username: str, telegram_id: int) -> InlineKeyboardMarkup:
