@@ -98,6 +98,20 @@ async def create_db_schema() -> None:
 
 
             "CREATE TABLE IF NOT EXISTS miniapp_transactions (id SERIAL PRIMARY KEY, telegram_id BIGINT NOT NULL, kind VARCHAR(64) NOT NULL, amount INTEGER NOT NULL DEFAULT 0, payload TEXT, created_at TIMESTAMPTZ NOT NULL DEFAULT NOW())",
+
+            "CREATE TABLE IF NOT EXISTS miniapp_deposits (id SERIAL PRIMARY KEY, telegram_id BIGINT NOT NULL, method VARCHAR(32) NOT NULL, status VARCHAR(32) NOT NULL DEFAULT 'pending', stars_amount INTEGER NOT NULL DEFAULT 0, ton_amount_nano BIGINT, comment VARCHAR(255), wallet_address TEXT, tx_hash TEXT, raw_payload TEXT, created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(), paid_at TIMESTAMPTZ)",
+            "ALTER TABLE miniapp_deposits ADD COLUMN IF NOT EXISTS method VARCHAR(32) NOT NULL DEFAULT 'ton'",
+            "ALTER TABLE miniapp_deposits ADD COLUMN IF NOT EXISTS status VARCHAR(32) NOT NULL DEFAULT 'pending'",
+            "ALTER TABLE miniapp_deposits ADD COLUMN IF NOT EXISTS stars_amount INTEGER NOT NULL DEFAULT 0",
+            "ALTER TABLE miniapp_deposits ADD COLUMN IF NOT EXISTS ton_amount_nano BIGINT",
+            "ALTER TABLE miniapp_deposits ADD COLUMN IF NOT EXISTS comment VARCHAR(255)",
+            "ALTER TABLE miniapp_deposits ADD COLUMN IF NOT EXISTS wallet_address TEXT",
+            "ALTER TABLE miniapp_deposits ADD COLUMN IF NOT EXISTS tx_hash TEXT",
+            "ALTER TABLE miniapp_deposits ADD COLUMN IF NOT EXISTS raw_payload TEXT",
+            "ALTER TABLE miniapp_deposits ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()",
+            "ALTER TABLE miniapp_deposits ADD COLUMN IF NOT EXISTS paid_at TIMESTAMPTZ",
+            "CREATE INDEX IF NOT EXISTS idx_miniapp_deposits_user_status ON miniapp_deposits(telegram_id, status)",
+            "CREATE INDEX IF NOT EXISTS idx_miniapp_deposits_comment ON miniapp_deposits(comment)",
             "ALTER TABLE admin_logs ALTER COLUMN created_at SET DEFAULT NOW()",
             "UPDATE admin_logs SET created_at = NOW() WHERE created_at IS NULL",
         ]

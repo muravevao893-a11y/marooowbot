@@ -5,30 +5,40 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
   <title>&marooow Mini App</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/app/static/styles.css" />
 </head>
 <body>
-  <div class="noise"></div>
-  <div class="app-shell">
+  <div class="aurora"></div>
+  <div class="grain"></div>
+
+  <div class="loader" id="loader">
+    <div class="loader-card">
+      <div class="loader-logo"><span>&</span></div>
+      <div class="loader-title">marooow</div>
+      <div class="loader-sub">Telegram Mini App</div>
+      <div class="loader-bar"><i></i></div>
+      <div class="loader-status" id="loaderStatus">Авторизация через Telegram…</div>
+    </div>
+  </div>
+
+  <div class="app-shell" id="shell">
     <header class="app-header">
       <div class="brand-block">
         <div class="brand-row">
           <div class="brand-mark">&</div>
           <div>
             <div class="brand-title">marooow</div>
-            <div class="brand-subtitle">кейсы · мини‑игры · подарки</div>
+            <div class="brand-subtitle">кейсы · мини‑игры · бонусы</div>
           </div>
         </div>
       </div>
       <div class="header-actions">
-        <button class="chip ref" id="copyRef" type="button" aria-label="Скопировать реферальную ссылку">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10.6 13.4a1 1 0 0 1 0-1.4l3.5-3.5a3 3 0 0 1 4.2 4.2l-2 2a3 3 0 0 1-4.2 0 1 1 0 1 1 1.4-1.4 1 1 0 0 0 1.4 0l2-2a1 1 0 1 0-1.4-1.4L12 13.4a1 1 0 0 1-1.4 0Zm2.8-2.8a1 1 0 0 1 0 1.4l-3.5 3.5a3 3 0 0 1-4.2-4.2l2-2a3 3 0 0 1 4.2 0 1 1 0 0 1-1.4 1.4 1 1 0 0 0-1.4 0l-2 2a1 1 0 0 0 1.4 1.4l3.5-3.5a1 1 0 0 1 1.4 0Z"/></svg>
-          <span>Реф.</span>
-        </button>
-        <button class="chip balance" id="openTopup" type="button" aria-label="Пополнить баланс"><span class="star">★</span><b id="stars">0</b><span class="plus">+</span></button>
+        <button class="chip ref" id="copyRef" type="button"><span class="svg link"></span><b>Реф.</b></button>
+        <button class="chip balance" id="openTopup" type="button"><span class="star">★</span><b id="stars">0</b><span class="plus">+</span></button>
       </div>
     </header>
 
@@ -47,8 +57,24 @@
     <div class="sheet-backdrop" data-close-sheet></div>
     <div class="sheet-card">
       <div class="sheet-head"><h2>Пополнение баланса</h2><button class="icon-btn" data-close-sheet type="button">×</button></div>
-      <div class="pay-tabs"><button class="active" data-pay="stars">★ Stars</button><button data-pay="ton">TON</button><button data-pay="send">Send</button><button data-pay="gifts">Gifts</button></div>
+      <div class="pay-tabs">
+        <button class="active" data-pay="stars">★ Stars</button>
+        <button data-pay="ton">💎 TON</button>
+        <button data-pay="send">💎 Send</button>
+        <button data-pay="gifts">🎁 Gifts</button>
+      </div>
+      <div id="ton-connect" class="ton-connect-host"></div>
       <div id="topupContent"></div>
+    </div>
+  </div>
+
+  <div class="modal" id="statusModal" aria-hidden="true">
+    <div class="modal-backdrop" data-close-modal></div>
+    <div class="modal-card">
+      <div class="status-ico" id="statusIcon">✓</div>
+      <h2 id="statusTitle">Готово</h2>
+      <p id="statusText">Операция выполнена.</p>
+      <button class="btn wide" data-close-modal>Ок</button>
     </div>
   </div>
 

@@ -94,6 +94,11 @@ class Settings:
 
     gift_text: str
 
+    ton_receiver_address: str | None
+    tonapi_key: str | None
+    ton_stars_per_ton: float
+    casino_mode_enabled: bool
+
 
 @lru_cache(maxsize=1)
 def get_settings() -> Settings:
@@ -133,4 +138,8 @@ def get_settings() -> Settings:
         mini_app_url=(os.getenv("MINI_APP_URL") or os.getenv("WEBAPP_URL") or "").strip() or None,
         webapp_enabled=_bool(os.getenv("WEBAPP_ENABLED"), True),
         gift_text=os.getenv("GIFT_TEXT", "Подарок от &marooow 🎁").strip(),
+        ton_receiver_address=(os.getenv("TON_RECEIVER_ADDRESS") or "").strip() or None,
+        tonapi_key=(os.getenv("TONAPI_KEY") or "").strip() or None,
+        ton_stars_per_ton=max(1.0, _float(os.getenv("TON_STARS_PER_TON"), 170.0)),
+        casino_mode_enabled=_bool(os.getenv("CASINO_MODE_ENABLED"), True),
     )
