@@ -6,7 +6,7 @@ from aiogram.types import CallbackQuery, Message
 
 from app.config import get_settings
 from app.db.session import session_scope
-from app.keyboards import main_menu_kb, profile_kb
+from app.keyboards import main_menu_kb, miniapp_kb, profile_kb
 from app.services.referral_service import get_referral_stats, set_referrer_if_possible
 from app.services.stats_service import activity_rows, latest_winners_rows, refs_top_rows
 from app.services.user_service import get_or_create_user
@@ -138,6 +138,17 @@ async def cmd_refs(message: Message) -> None:
 async def cmd_activity(message: Message) -> None:
     async with session_scope() as session:
         await message.answer(activity_text(await activity_rows(session)), reply_markup=main_menu_kb())
+
+
+@router.message(Command("miniapp"))
+async def cmd_miniapp(message: Message) -> None:
+    await message.answer(
+        "🎮 <b>&amp;marooow Mini App</b>\n"
+        "━━━━━━━━━━━━━━\n\n"
+        "Открывай приложение именно через кнопку ниже.\n"
+        "Так Telegram передаст авторизацию профиля, аватарку и username.",
+        reply_markup=miniapp_kb(),
+    )
 
 
 @router.callback_query(F.data == "home")

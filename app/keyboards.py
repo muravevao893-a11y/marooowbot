@@ -65,3 +65,19 @@ def admin_kb() -> InlineKeyboardMarkup:
             [InlineKeyboardButton(text="📦 Gifts /gifts", callback_data="admin_gifts_help")],
         ]
     )
+
+
+def miniapp_kb() -> InlineKeyboardMarkup:
+    settings = get_settings()
+    if not settings.mini_app_url:
+        return InlineKeyboardMarkup(
+            inline_keyboard=[[InlineKeyboardButton(text="⚠️ MINI_APP_URL не настроен", callback_data="home")]]
+        )
+    return InlineKeyboardMarkup(
+        inline_keyboard=[[
+            InlineKeyboardButton(
+                text="🚀 Открыть Mini App",
+                web_app=WebAppInfo(url=settings.mini_app_url),
+            )
+        ]]
+    )

@@ -8,6 +8,9 @@ from aiogram.types import LabeledPrice, Message, PreCheckoutQuery
 from aiogram.exceptions import TelegramAPIError
 
 from app.config import get_settings
+from sqlalchemy import text
+
+from app.db.session import session_scope
 from app.services.gift_service import format_available_gifts
 from app.utils.tg_html import h
 
@@ -78,7 +81,8 @@ async def cmd_topup(message: Message, command: CommandObject) -> None:
 
 @router.pre_checkout_query()
 async def pre_checkout(query: PreCheckoutQuery) -> None:
-    if not (query.invoice_payload or "").startswith("topup:"):
+    payload = query.invoice_payload or ""
+    if not (payload.startswith("topup:") or payload.startswith("miniapp_topup:")):
         await query.answer(ok=False, error_message="Неверный платёж.")
         return
     await query.answer(ok=True)
@@ -89,4 +93,29 @@ async def successful_payment(message: Message) -> None:
     payment = message.successful_payment
     if not payment:
         return
-    await message.answer(f"✅ <b>Пополнение прошло.</b>\n\nЗачислено: <b>⭐ {payment.total_amount}</b>")
+
+    payload = payment.invoice_payload or ""
+    amount = int(payment.total_amount or 0)
+
+    if payload.startswith("miniapp_topup:"):
+        parts = payload.split(":")
+        try:
+            telegram_id = int(parts[1])
+        except Exception:
+            telegram_id = message.from_user.id if message.from_user else None
+
+        if telegram_id:
+            async with session_scope() as session:
+                await session.execute(
+                    text("UPDATE users SET app_stars = COALESCE(app_stars, 0) + :amount, last_seen_at = NOW() WHERE telegram_id = :tid"),
+                    {"amount": amount, "tid": telegram_id},
+                )
+                await session.execute(
+                    text("INSERT INTO miniapp_transactions (telegram_id, kind, amount, payload) VALUES (:tid, 'topup', :amount, :payload)"),
+                    {"tid": telegram_id, "amount": amount, "payload": payload},
+                )
+
+        await message.answer(f"✅ <b>Баланс Mini App пополнен.</b>\n\nЗачислено: <b>★ {amount}</b>")
+        return
+
+    await message.answer(f"✅ <b>Пополнение прошло.</b>\n\nЗачислено: <b>⭐ {amount}</b>")
