@@ -90,7 +90,20 @@ def _nano_to_ton(amount_nano: int) -> float:
 
 
 async def index(request: web.Request) -> web.Response:
-    return web.FileResponse(STATIC_DIR / "index.html")
+    # HARD FIX: serve the Mini App shell as text/html with inline CSS/JS.
+    # This avoids Telegram WebView / Railway static CSS cache problems.
+    html = (STATIC_DIR / "index.html").read_text(encoding="utf-8")
+    return web.Response(
+        text=html,
+        content_type="text/html",
+        charset="utf-8",
+        headers={
+            "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0",
+            "Pragma": "no-cache",
+            "Expires": "0",
+            "X-Maroow-UI": "v6-hardfix-inline",
+        },
+    )
 
 
 async def health(request: web.Request) -> web.Response:
@@ -621,6 +634,7 @@ def setup_webapp_routes(app: web.Application, bot: Bot, settings: Settings | Non
     app.router.add_get("/app/", index)
     app.router.add_get("/tonconnect-manifest.json", ton_manifest)
     app.router.add_static("/app/static", STATIC_DIR, show_index=False)
+    app.router.add_static("/static", STATIC_DIR, show_index=False)
     app.router.add_get("/api/health", health)
     app.router.add_post("/api/me", me)
     app.router.add_get("/api/winners", winners)
