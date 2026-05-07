@@ -13,7 +13,7 @@ from aiogram.webhook.aiohttp_server import SimpleRequestHandler, setup_applicati
 
 from app.config import get_settings
 from app.db.session import create_db_schema
-from app.handlers import admin, giveaways, payments, user
+from app.handlers import admin, giveaways, payments, user, miniapp
 from app.jobs.scheduler import init_scheduler, restore_active_giveaways
 from app.webapp.server import setup_webapp_routes
 
@@ -73,6 +73,10 @@ async def main() -> None:
     dp.include_router(user.router)
     dp.include_router(admin.router)
     dp.include_router(payments.router)
+    dp.include_router(giveaways.router)
+    dp.include_router(user.router)
+    dp.include_router(admin.router)
+    dp.include_router(miniapp.router)
     dp.include_router(giveaways.router)
 
     scheduler = init_scheduler(bot, settings)
