@@ -88,3 +88,17 @@ Cover: `assets/miniapp_cover_640x360.jpg`.
 MINI_APP_URL=https://your-domain.up.railway.app/app
 WEBAPP_ENABLED=true
 ```
+
+## Premium Mini App UI v10
+
+В этой версии Mini App:
+
+- полностью тёмный premium UI без прозрачных панелей;
+- SVG-иконки вместо emoji;
+- адаптив для Telegram Desktop: приложение не растягивается огромным экраном;
+- inline CSS/JS внутри `app/webapp/static/index.html`, чтобы Telegram WebView не терял стили;
+- красивый splash-screen, bottom-nav, карточки, модалки, статусы успеха/ошибки;
+- безопасный fan/demo режим мини-игр без реальных ставок и вывода денег;
+- Stars invoice и TON-пополнение на `TON_RECEIVER_ADDRESS`.
+
+Открывать Mini App нужно только через `web_app` кнопку бота (`/miniapp`) или Menu Button BotFather.
