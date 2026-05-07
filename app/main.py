@@ -74,10 +74,6 @@ async def main() -> None:
     dp.include_router(admin.router)
     dp.include_router(payments.router)
     dp.include_router(giveaways.router)
-    dp.include_router(user.router)
-    dp.include_router(admin.router)
-    dp.include_router(miniapp.router)
-    dp.include_router(giveaways.router)
 
     scheduler = init_scheduler(bot, settings)
     scheduler.start()
