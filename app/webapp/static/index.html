@@ -237,6 +237,7 @@ let state = {
   authOk:false,
   loading:true,
   telegram:{},
+  authReason:'loading',
   user:{stars:0,level:1,exp:0,next_level_exp:10000,wins_count:0,entries_count:0,ref_link:''},
   chance:{base:3,bonus:0,final:3,active_refs:0,pending_refs:0,attempts_7d:0,cap:3},
   ton:{enabled:false,receiver:'',stars_per_ton:170,verified_mode:false},
@@ -285,13 +286,20 @@ function previewState(){
 }
 
 function top(){
+  const reason = state.authReason === 'no_init_data'
+    ? 'Telegram не передал initData. Открой Mini App именно через WebApp-кнопку бота.'
+    : state.authReason === 'auth_failed'
+      ? 'Сервер не принял авторизацию. Чаще всего BOT_TOKEN в Railway не совпадает с ботом, который открыл Mini App.'
+      : state.authReason === 'api_error'
+        ? 'API профиля не ответил. Проверь, что контейнер Railway запущен без ошибок.'
+        : 'Подключаем профиль Telegram...';
   return `<div class="top">
     <div class="brand"><div class="mark">&</div><div><b>&marooow</b><span>gifts · drops · games</span></div></div>
     <div class="actions">
       <button class="pill gold" onclick="copyRef()">${icon('link')}Реф</button>
       <button class="pill" onclick="openTopup()">${icon('star','gold')}${fmt(state.user.stars)} +</button>
     </div>
-  </div>${state.authOk ? '' : '<div class="preview show">Preview-режим. Для бонусов, оплаты и инвентаря открой Mini App через кнопку в боте.</div>'}`;
+  </div>${state.authOk ? '' : `<div class="preview show">Preview-режим. ${safe(reason)}</div>`}`;
 }
 
 function avatar(){
@@ -480,15 +488,15 @@ function setTab(tab){
 
 async function bootstrap(){
   document.getElementById('loaderVisual').innerHTML = svg.case;
-  state = {...state, ...previewState(), authOk:false, loading:true};
+  state = {...state, ...previewState(), authOk:false, authReason:initData ? 'loading' : 'no_init_data', loading:true};
   shell();
   setTimeout(()=>splash.classList.add('hide'), 250);
   try{
     const me = await api('/api/me', {}, 'POST', 6500);
-    state = {...state, ...me, authOk:true, loading:false};
+    state = {...state, ...me, authOk:true, authReason:'ok', loading:false};
     shell();
   }catch(e){
-    state = {...state, authOk:false, loading:false};
+    state = {...state, authOk:false, authReason:e?.error === 'auth_failed' ? 'auth_failed' : 'api_error', loading:false};
     shell();
   }
   refreshSideData();
