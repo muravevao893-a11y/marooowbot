@@ -113,7 +113,7 @@ def get_settings() -> Settings:
         discussion_chat_id=os.getenv("DISCUSSION_CHAT_ID", "").strip(),
         database_url=database_url,
         redis_url=os.getenv("REDIS_URL", "redis://localhost:6379/0").strip(),
-        webhook_full_url=(os.getenv("WEBHOOK_FULL_URL") or "").strip() or None,
+        webhook_full_url=(os.getenv("WEBHOOK_FULL_URL") or os.getenv("WEBHOOK_URL") or "").strip() or None,
         webhook_path=os.getenv("WEBHOOK_PATH", "/webhook").strip(),
         webapp_host=os.getenv("WEBAPP_HOST", "0.0.0.0").strip(),
         webapp_port=_int(os.getenv("PORT") or os.getenv("WEBAPP_PORT"), 8080),

@@ -1,106 +1,562 @@
 <!doctype html>
 <html lang="ru">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
-<meta name="theme-color" content="#05060a" />
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#07080c">
 <title>&marooow Mini App</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
 :root{
   color-scheme:dark;
-  --bg:#05060a; --bg2:#080a12; --panel:#0d1018; --panel2:#121722; --panel3:#171c29;
-  --line:#232a3a; --line2:#2c3549; --gold:#ffd06a; --gold2:#f4a928; --gold3:#9b6415;
-  --text:#f8f6ef; --muted:#8f97ad; --soft:#c7cede; --red:#ff5374; --green:#36e198; --blue:#45bfff; --violet:#8b5cff;
-  --shadow:0 22px 70px rgba(0,0,0,.62); --radius:26px; --nav:82px; --max:430px;
+  --bg:#07080c; --surface:#10131b; --surface2:#151a25; --surface3:#1b2230;
+  --line:#2a3142; --text:#f8f7f2; --muted:#9aa3b6; --soft:#d6dced;
+  --gold:#f8c75d; --gold2:#ffdf91; --blue:#58b8ff; --mint:#43e0a0; --red:#ff5c78; --ink:#08090d;
+  --shadow:0 22px 70px rgba(0,0,0,.48); --nav:84px; --max:440px;
 }
-*{box-sizing:border-box;-webkit-tap-highlight-color:transparent} html,body{margin:0;width:100%;min-height:100%;background:var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;overflow:hidden} button,input{font:inherit} button{border:0;background:none;color:inherit;cursor:pointer} a{color:inherit;text-decoration:none}
-body{background:radial-gradient(900px 520px at 50% -18%,rgba(255,186,58,.16),transparent 60%),radial-gradient(700px 520px at 110% 30%,rgba(104,78,255,.10),transparent 62%),linear-gradient(180deg,#06070c,#030408)}
-.app{position:relative;width:100%;max-width:var(--max);height:100svh;margin:0 auto;background:linear-gradient(180deg,#070910,#05060a 50%,#030407);overflow:hidden;isolation:isolate}
-@media (min-width:660px){body{display:grid;place-items:center;padding:14px}.app{width:min(430px,100vw - 28px);height:min(820px,100svh - 28px);border-radius:32px;border:1px solid #20283a;box-shadow:0 18px 70px rgba(0,0,0,.55),0 0 0 1px rgba(255,255,255,.035)}}
-.bg{position:absolute;inset:0;pointer-events:none;overflow:hidden}.bg:before{content:"";position:absolute;inset:-40%;background:radial-gradient(circle at 25% 10%,rgba(255,202,91,.17),transparent 22%),radial-gradient(circle at 85% 18%,rgba(80,120,255,.10),transparent 25%),radial-gradient(circle at 48% 105%,rgba(255,172,48,.09),transparent 26%);filter:blur(8px)}.bg:after{content:"";position:absolute;inset:0;opacity:.12;background-image:linear-gradient(rgba(255,255,255,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.07) 1px,transparent 1px);background-size:48px 48px;mask-image:linear-gradient(180deg,#000,transparent 78%)}
-.screen{position:relative;z-index:2;height:100%;overflow:auto;padding:18px 15px calc(var(--nav) + 18px);scrollbar-width:none}.screen::-webkit-scrollbar{width:0}.screen-inner{animation:rise .42s cubic-bezier(.2,.8,.2,1)}@keyframes rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
-.top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px}.brand{display:flex;align-items:center;gap:11px;min-width:0}.brand-logo{width:42px;height:42px;border-radius:16px;display:grid;place-items:center;background:linear-gradient(135deg,#ffe18b,#c17717);color:#080a10;box-shadow:0 14px 34px rgba(255,179,47,.22)}.brand-logo svg{width:24px}.brand-title{min-width:0}.brand-title b{display:block;font-size:24px;letter-spacing:-.9px;line-height:1}.brand-title span{display:block;margin-top:2px;color:var(--muted);font-size:11px;font-weight:800;letter-spacing:.2px}.pills{display:flex;gap:7px;align-items:center}.pill{height:40px;border-radius:999px;padding:0 12px;display:flex;align-items:center;gap:7px;background:#0c0f17;border:1px solid var(--line);font-weight:950;font-size:13px;white-space:nowrap;box-shadow:inset 0 1px rgba(255,255,255,.035);transition:.16s}.pill:active{transform:scale(.97)}.pill.gold{color:#ffe2a4;border-color:#58411d;background:linear-gradient(180deg,#14131a,#0b0d13)}
-.ico{width:20px;height:20px;display:inline-grid;place-items:center;vertical-align:middle}.ico svg{width:100%;height:100%;display:block}.gold{color:var(--gold)}.muted{color:var(--muted)}
-.hero{position:relative;overflow:hidden;border-radius:30px;background:linear-gradient(135deg,#111724 0%,#0d1018 48%,#251804 100%);border:1px solid #273044;box-shadow:var(--shadow);padding:24px 20px;min-height:224px;margin-bottom:13px}.hero:before{content:"";position:absolute;width:230px;height:230px;border-radius:999px;right:-78px;top:-54px;background:radial-gradient(circle,#ffbb35,transparent 63%);opacity:.38;filter:blur(2px)}.hero:after{content:"";position:absolute;inset:0;background:linear-gradient(115deg,transparent 35%,rgba(255,255,255,.07) 50%,transparent 62%);transform:translateX(-120%);animation:shine 5.8s ease-in-out infinite}@keyframes shine{55%,100%{transform:translateX(130%)}}
-.hero h1{position:relative;z-index:1;margin:0 0 9px;font-size:31px;line-height:1.02;letter-spacing:-1px}.hero p{position:relative;z-index:1;margin:0;color:#d7deef;font-size:14px;line-height:1.45;font-weight:750;max-width:214px}.hero-actions{position:relative;z-index:2;display:flex;gap:9px;margin-top:17px}.btn{height:46px;border-radius:16px;padding:0 16px;background:linear-gradient(180deg,#ffe28c,#ffb233);color:#130f09;font-weight:1000;box-shadow:0 14px 34px rgba(255,178,50,.22),inset 0 1px rgba(255,255,255,.55);transition:.16s transform,.16s filter}.btn:active{transform:scale(.97)}.btn.ghost{background:#10141e;color:#ffe0a2;border:1px solid #5e4520;box-shadow:none}.btn.dark{background:#111621;color:var(--text);border:1px solid var(--line);box-shadow:none}.btn:disabled{opacity:.45;filter:grayscale(1);box-shadow:none}.hero-art{position:absolute;right:15px;bottom:16px;width:138px;height:126px;z-index:1;filter:drop-shadow(0 24px 36px rgba(0,0,0,.52));animation:float 4s ease-in-out infinite}.hero-art svg{width:100%;height:100%}@keyframes float{50%{transform:translateY(-8px) rotate(-1deg)}}
-.statgrid{display:grid;grid-template-columns:1fr 1fr;gap:11px}.stat{border-radius:22px;background:linear-gradient(180deg,#101520,#090c12);border:1px solid var(--line);padding:15px;min-height:104px;position:relative;overflow:hidden}.stat:before{content:"";position:absolute;right:-50px;bottom:-55px;width:120px;height:120px;border-radius:999px;background:rgba(255,198,77,.12);filter:blur(16px)}.stat span{display:block;color:var(--muted);font-size:12px;font-weight:800}.stat b{display:block;margin-top:8px;font-size:25px;letter-spacing:-.6px}.section{margin-top:18px}.section-head{display:flex;align-items:center;justify-content:space-between;margin:0 2px 10px}.section-head h2{margin:0;font-size:18px;letter-spacing:-.35px}.section-head span{color:var(--muted);font-size:12px;font-weight:850}.grid{display:grid;grid-template-columns:1fr 1fr;gap:11px}.card{position:relative;overflow:hidden;text-align:left;border-radius:24px;min-height:142px;padding:15px;background:linear-gradient(180deg,#111621,#090c12);border:1px solid var(--line);box-shadow:0 14px 38px rgba(0,0,0,.28);transition:.16s}.card:active{transform:scale(.985)}.card h3{margin:12px 0 4px;font-size:16px}.card p{margin:0;color:var(--muted);font-size:12px;font-weight:750;line-height:1.35}.mini-icon{width:55px;height:55px;border-radius:19px;display:grid;place-items:center;background:#0c1018;border:1px solid #283246;color:var(--gold);box-shadow:inset 0 1px rgba(255,255,255,.045)}.mini-icon svg{width:29px}.wide{grid-column:1/-1;min-height:116px}.rows{display:grid;gap:9px}.row{display:flex;align-items:center;gap:12px;border-radius:18px;padding:12px;background:#0d111a;border:1px solid var(--line)}.row-main{min-width:0;flex:1}.row-main b{display:block;font-size:14px}.row-main span{display:block;color:var(--muted);font-size:12px;font-weight:750;margin-top:2px}.progress{height:12px;background:#080b11;border:1px solid var(--line);border-radius:999px;overflow:hidden;margin-top:12px}.progress div{height:100%;width:0;border-radius:999px;background:linear-gradient(90deg,#ffad25,#ffe38e);box-shadow:0 0 22px rgba(255,190,70,.45);transition:width .65s cubic-bezier(.2,.8,.2,1)}
-.profile{display:flex;align-items:center;gap:13px;padding:16px;border-radius:25px;background:#0d111a;border:1px solid var(--line)}.avatar{width:70px;height:70px;border-radius:23px;overflow:hidden;display:grid;place-items:center;background:#0b0e15;border:1px solid #4a391a;color:var(--gold)}.avatar img{width:100%;height:100%;object-fit:cover}.avatar svg{width:34px}.profile-name{font-size:21px;font-weight:1000;letter-spacing:-.5px}.profile-id{font-size:12px;color:var(--muted);font-weight:800;margin-top:3px}.copybox{display:flex;gap:8px;margin-top:11px}.copybox input{min-width:0;flex:1;height:44px;border-radius:15px;border:1px solid var(--line);background:#090c12;color:#fff;padding:0 12px;font-weight:800}.copybox button{height:44px;border-radius:15px;padding:0 13px;background:#121825;border:1px solid #4c391b;color:#ffe0a3;font-weight:950}
-.nav{position:absolute;z-index:30;left:0;right:0;bottom:0;height:var(--nav);display:grid;grid-template-columns:repeat(5,1fr);gap:2px;padding:9px 9px calc(9px + env(safe-area-inset-bottom));background:#05060a;border-top:1px solid #1d2433}.nav button{display:grid;place-items:center;align-content:center;gap:4px;border-radius:17px;color:#838da4;font-size:10px;font-weight:900}.nav .ico{width:22px;height:22px}.nav button.active{color:#ffd272;background:#11100c;box-shadow:inset 0 0 0 1px #5b421b,0 10px 24px rgba(255,181,45,.09)}
-.sheet,.status{position:absolute;z-index:60;inset:0;display:none;background:rgba(0,0,0,.72);backdrop-filter:blur(11px);padding:14px}.sheet.show{display:flex;align-items:flex-end}.sheet-card{width:100%;max-height:90%;overflow:auto;border-radius:30px 30px 0 0;background:#0e1119;border:1px solid #272f42;padding:18px 14px;box-shadow:0 -28px 80px rgba(0,0,0,.6);animation:sheet .28s cubic-bezier(.2,.8,.2,1)}@media(min-width:660px){.sheet.show{align-items:center;justify-content:center}.sheet-card{border-radius:28px;max-width:404px;max-height:760px}}@keyframes sheet{from{opacity:.4;transform:translateY(42px)}to{opacity:1;transform:none}}.sheet-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:13px}.sheet-top h2{margin:0;font-size:22px}.close{width:43px;height:43px;border-radius:17px;background:#171c28;border:1px solid var(--line);display:grid;place-items:center}.tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-bottom:11px}.tab{height:40px;border-radius:14px;border:1px solid var(--line);background:#10141e;color:#b7bed0;font-weight:950;font-size:12px;display:flex;align-items:center;justify-content:center;gap:5px}.tab.active{background:#151b28;border-color:#fff;color:#fff}.promo{width:100%;height:47px;border-radius:15px;border:1px solid var(--line);background:#090c12;color:#fff;outline:none;padding:0 13px;margin-bottom:10px}.amounts{display:grid;gap:9px}.amount{width:100%;height:64px;border-radius:20px;border:1px solid var(--line);background:#10141d;display:flex;align-items:center;gap:12px;padding:0 12px;text-align:left}.amount.active{border-color:#ffca62;box-shadow:0 0 0 3px rgba(255,203,98,.08)}.star-flat{width:24px;color:#ffcc67}.radio{margin-left:auto;width:22px;height:22px;border-radius:99px;border:1px solid #586176}.amount.active .radio{border:6px solid #ffcc67}.note{border-radius:18px;border:1px solid #42331a;background:#14120f;color:#d9c59e;padding:12px;font-size:13px;font-weight:750;line-height:1.35}.confirm{position:sticky;bottom:0;margin-top:12px;width:100%}.status.show{display:grid;place-items:center}.status-card{width:min(338px,100%);border-radius:30px;text-align:center;background:#101520;border:1px solid #293246;box-shadow:var(--shadow);padding:26px 20px;animation:pop .24s cubic-bezier(.2,.8,.2,1)}@keyframes pop{from{transform:scale(.93);opacity:.45}to{transform:none;opacity:1}}.status-mark{width:82px;height:82px;border-radius:27px;margin:0 auto 17px;display:grid;place-items:center}.status-mark svg{width:40px}.status-mark.ok{background:linear-gradient(180deg,#42f0a4,#0fb76b)}.status-mark.bad{background:linear-gradient(180deg,#ff7a95,#ee385f)}.status-mark.wait{background:linear-gradient(180deg,#ffe18c,#ffaf2c);color:#111}.status-card h2{margin:0 0 9px}.status-card p{margin:0 0 17px;color:#c6ccda;font-weight:750;line-height:1.4}
-.splash{position:absolute;z-index:100;inset:0;background:radial-gradient(440px 320px at 50% 33%,rgba(255,184,47,.18),transparent 68%),linear-gradient(180deg,#07080e,#030408);display:grid;place-items:center;transition:.42s opacity,.42s visibility}.splash.hide{opacity:0;visibility:hidden}.splash-card{text-align:center;width:min(330px,90%)}.loader-orb{position:relative;width:150px;height:150px;margin:0 auto 18px;display:grid;place-items:center}.loader-orb:before,.loader-orb:after{content:"";position:absolute;inset:0;border-radius:999px;border:1px solid rgba(255,205,102,.22);animation:spin 5s linear infinite}.loader-orb:after{inset:18px;border-color:rgba(116,95,255,.22);animation-direction:reverse;animation-duration:3.4s}.loader-case{position:relative;z-index:1;width:108px;height:96px;filter:drop-shadow(0 22px 44px rgba(255,180,50,.22));animation:float 2.8s ease-in-out infinite}.loader-case svg{width:100%;height:100%}@keyframes spin{to{transform:rotate(360deg)}}.splash h1{margin:0;font-size:34px;letter-spacing:-1px}.splash p{margin:8px 0 0;color:#b2bad0;font-weight:850}.loadbar{height:9px;border-radius:99px;background:#0d1119;border:1px solid #222a3c;margin:18px auto 0;overflow:hidden}.loadbar i{display:block;height:100%;width:46%;border-radius:99px;background:linear-gradient(90deg,#ffb233,#ffe18d);animation:bar 1.35s ease-in-out infinite}@keyframes bar{0%{transform:translateX(-105%)}100%{transform:translateX(230%)}}.load-step{height:18px;margin-top:10px;color:#717b92;font-size:12px;font-weight:850}.preview{display:none;margin:0 0 12px;border-radius:17px;background:#17110d;border:1px solid #4d3715;color:#ffdca0;padding:11px 12px;font-size:12px;font-weight:800;line-height:1.35}.preview.show{display:block}.version{position:absolute;right:16px;top:10px;color:#4d566b;font-size:10px;font-weight:900}.hidden{display:none!important}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;width:100%;min-height:100%;overflow:hidden;background:#030406;color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}
+button,input{font:inherit} button{border:0;color:inherit;background:none;cursor:pointer} a{color:inherit;text-decoration:none}
+body{background:radial-gradient(900px 520px at 50% -18%,rgba(248,199,93,.18),transparent 58%),radial-gradient(760px 520px at 110% 28%,rgba(88,184,255,.12),transparent 60%),linear-gradient(180deg,#08090f,#030406)}
+.app{position:relative;width:100%;max-width:var(--max);height:100svh;margin:0 auto;background:linear-gradient(180deg,#090b12,#07080c 48%,#05060a);overflow:hidden;isolation:isolate}
+@media(min-width:660px){body{display:grid;place-items:center;padding:14px}.app{height:min(860px,100svh - 28px);width:min(var(--max),100vw - 28px);border:1px solid #222a3a;border-radius:34px;box-shadow:0 20px 80px rgba(0,0,0,.58)}}
+.ambient{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.ambient:before{content:"";position:absolute;inset:-35%;background:radial-gradient(circle at 28% 8%,rgba(248,199,93,.18),transparent 24%),radial-gradient(circle at 86% 26%,rgba(88,184,255,.14),transparent 26%),radial-gradient(circle at 40% 106%,rgba(67,224,160,.08),transparent 28%);filter:blur(10px)}
+.ambient:after{content:"";position:absolute;inset:0;opacity:.10;background-image:linear-gradient(rgba(255,255,255,.08) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.08) 1px,transparent 1px);background-size:42px 42px;mask-image:linear-gradient(180deg,#000,transparent 76%)}
+.view{position:relative;z-index:2;height:100%;overflow:auto;padding:16px 14px calc(var(--nav) + 18px);scrollbar-width:none}.view::-webkit-scrollbar{width:0}
+.screen{animation:rise .34s cubic-bezier(.2,.8,.2,1)}@keyframes rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px}.brand{display:flex;align-items:center;gap:10px;min-width:0}.mark{width:43px;height:43px;border-radius:15px;background:linear-gradient(135deg,#fff0b9,#f5af28);display:grid;place-items:center;color:#161006;font-weight:1000;font-size:24px;box-shadow:0 16px 34px rgba(248,183,50,.22)}.brand b{display:block;font-size:23px;line-height:1;letter-spacing:0}.brand span{display:block;margin-top:3px;color:var(--muted);font-size:11px;font-weight:800}.actions{display:flex;align-items:center;gap:7px}.pill{height:39px;border-radius:999px;padding:0 11px;display:flex;align-items:center;gap:7px;background:#0d1018;border:1px solid var(--line);font-size:13px;font-weight:950;white-space:nowrap}.pill.gold{color:#ffe3a2;border-color:#57421f;background:linear-gradient(180deg,#171419,#0d1017)}.pill:active,.btn:active,.nav button:active,.card:active,.row-button:active{transform:scale(.98)}
+.icon{width:20px;height:20px;display:inline-grid;place-items:center}.icon svg{width:100%;height:100%;display:block}.gold{color:var(--gold)}
+.hero{position:relative;min-height:218px;padding:20px;border-radius:28px;overflow:hidden;background:linear-gradient(135deg,#121825 0%,#0e1119 48%,#211706 100%);border:1px solid #2b3448;box-shadow:var(--shadow);margin-bottom:12px}.hero:before{content:"";position:absolute;right:-70px;top:-74px;width:230px;height:230px;border-radius:50%;background:radial-gradient(circle,#ffcd67,transparent 65%);opacity:.42}.hero h1{position:relative;z-index:2;margin:0 0 8px;font-size:31px;line-height:1.02;letter-spacing:0}.hero p{position:relative;z-index:2;margin:0;max-width:220px;color:#dce3f1;font-size:14px;font-weight:760;line-height:1.42}.hero-actions{position:relative;z-index:3;display:flex;gap:8px;margin-top:16px;flex-wrap:wrap}.hero-visual{position:absolute;right:8px;bottom:10px;width:154px;height:142px;filter:drop-shadow(0 26px 38px rgba(0,0,0,.5));animation:float 4s ease-in-out infinite}.hero-visual svg{width:100%;height:100%}@keyframes float{50%{transform:translateY(-7px) rotate(-1deg)}}
+.btn{min-height:44px;border-radius:15px;padding:0 15px;display:inline-flex;align-items:center;justify-content:center;gap:7px;background:linear-gradient(180deg,#ffe396,#f4ae2e);color:#160f05;font-weight:1000;box-shadow:0 14px 34px rgba(248,183,50,.20),inset 0 1px rgba(255,255,255,.55);transition:.15s transform,.15s opacity}.btn.dark{background:#121722;color:var(--text);border:1px solid var(--line);box-shadow:none}.btn.ghost{background:#11151f;color:#ffe0a0;border:1px solid #60491f;box-shadow:none}.btn.blue{background:linear-gradient(180deg,#8fd7ff,#48aef6);color:#06101a}.btn:disabled{opacity:.45;filter:grayscale(.75);box-shadow:none}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}.stat{position:relative;overflow:hidden;border-radius:20px;min-height:96px;padding:14px;background:linear-gradient(180deg,#101520,#0b0e15);border:1px solid var(--line)}.stat span{display:block;color:var(--muted);font-size:12px;font-weight:850}.stat b{display:block;margin-top:7px;font-size:24px;letter-spacing:0}.stat:after{content:"";position:absolute;right:-38px;bottom:-44px;width:105px;height:105px;border-radius:50%;background:rgba(248,199,93,.12);filter:blur(12px)}
+.section{margin-top:18px}.section-head{display:flex;align-items:center;justify-content:space-between;margin:0 2px 10px}.section-head h2{margin:0;font-size:18px;letter-spacing:0}.section-head span{color:var(--muted);font-size:12px;font-weight:850}.stack{display:grid;gap:10px}
+.card,.row-button,.panel{position:relative;overflow:hidden;border-radius:20px;background:linear-gradient(180deg,#111722,#0b0f17);border:1px solid var(--line);box-shadow:0 14px 36px rgba(0,0,0,.24)}.card{min-height:134px;padding:14px;text-align:left}.card h3,.panel h3{margin:10px 0 4px;font-size:16px}.card p,.panel p{margin:0;color:var(--muted);font-size:12px;font-weight:760;line-height:1.36}.mini{width:52px;height:52px;border-radius:17px;display:grid;place-items:center;color:var(--gold);background:#0c1018;border:1px solid #293347}.mini svg{width:28px}.wide{grid-column:1/-1}.panel{padding:14px}.row{display:flex;align-items:center;gap:11px;border-radius:18px;padding:12px;background:#0d121b;border:1px solid var(--line)}.row-main{min-width:0;flex:1}.row-main b{display:block;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.row-main span{display:block;margin-top:2px;color:var(--muted);font-size:12px;font-weight:760;overflow:hidden;text-overflow:ellipsis}.row-button{text-align:left;padding:12px;display:flex;align-items:center;gap:11px;width:100%}
+.progress{height:12px;border-radius:999px;background:#080b11;border:1px solid var(--line);overflow:hidden}.progress i{display:block;height:100%;width:0;border-radius:999px;background:linear-gradient(90deg,#f4ae2e,#ffe69b);box-shadow:0 0 18px rgba(248,199,93,.36);transition:width .5s cubic-bezier(.2,.8,.2,1)}
+.game-stage{height:150px;border-radius:22px;background:linear-gradient(180deg,#101827,#080b12);border:1px solid #2b3549;position:relative;overflow:hidden}.game-stage:before{content:"";position:absolute;inset:16px;background:radial-gradient(circle at 20% 25%,rgba(88,184,255,.22),transparent 18%),radial-gradient(circle at 78% 36%,rgba(248,199,93,.20),transparent 19%),radial-gradient(circle at 50% 78%,rgba(67,224,160,.15),transparent 18%)}.token{position:absolute;left:50%;top:20px;width:30px;height:30px;border-radius:50%;background:linear-gradient(180deg,#fff1b2,#f4ae2e);box-shadow:0 0 28px rgba(248,199,93,.45);animation:drop 1.4s ease-in-out infinite}@keyframes drop{50%{transform:translate(-28px,72px)}100%{transform:translate(32px,104px)}}.spark{position:absolute;width:8px;height:8px;border-radius:50%;background:#58b8ff;box-shadow:0 0 16px #58b8ff}.spark:nth-child(2){left:24%;top:36%}.spark:nth-child(3){left:66%;top:42%;background:#43e0a0}.spark:nth-child(4){left:45%;top:70%;background:#f8c75d}
+.gift-img{width:42px;height:42px;object-fit:contain}.avatar{width:68px;height:68px;border-radius:22px;overflow:hidden;display:grid;place-items:center;background:#0d111a;border:1px solid #51401e;color:var(--gold);font-size:28px;font-weight:1000}.avatar img{width:100%;height:100%;object-fit:cover}.profile-card{display:flex;align-items:center;gap:13px;padding:14px;border-radius:22px;background:#0d121b;border:1px solid var(--line)}.copybox{display:flex;gap:8px;margin-top:10px}.copybox input{min-width:0;flex:1;height:43px;border-radius:14px;border:1px solid var(--line);background:#090c12;color:#fff;padding:0 12px;font-weight:800}.copybox button{height:43px;border-radius:14px;padding:0 13px;background:#131925;border:1px solid #4b3a1e;color:#ffe0a0;font-weight:950}
+.nav{position:absolute;z-index:30;left:0;right:0;bottom:0;height:var(--nav);display:grid;grid-template-columns:repeat(5,1fr);gap:2px;padding:8px 8px calc(8px + env(safe-area-inset-bottom));background:rgba(5,6,10,.90);backdrop-filter:blur(18px);border-top:1px solid #1e2635}.nav button{display:grid;place-items:center;align-content:center;gap:4px;border-radius:17px;color:#8590a5;font-size:10px;font-weight:900}.nav button.active{color:#ffd677;background:#11120f;box-shadow:inset 0 0 0 1px #57421f}.nav .icon{width:22px;height:22px}
+.sheet,.modal{position:absolute;z-index:60;inset:0;display:none;background:rgba(0,0,0,.66);backdrop-filter:blur(10px);padding:14px}.sheet.show{display:flex;align-items:flex-end}.modal.show{display:grid;place-items:center}.sheet-card,.modal-card{width:100%;background:#0f141e;border:1px solid #293246;box-shadow:var(--shadow)}.sheet-card{max-height:90%;overflow:auto;border-radius:28px 28px 0 0;padding:16px 14px calc(16px + env(safe-area-inset-bottom));animation:sheet .24s cubic-bezier(.2,.8,.2,1)}@media(min-width:660px){.sheet.show{align-items:center;justify-content:center}.sheet-card{max-width:410px;border-radius:28px;max-height:760px}}@keyframes sheet{from{transform:translateY(32px);opacity:.5}to{transform:none;opacity:1}}.sheet-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}.sheet-head h2{margin:0;font-size:21px}.close{width:42px;height:42px;border-radius:15px;display:grid;place-items:center;background:#171d29;border:1px solid var(--line)}.pay-tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-bottom:10px}.pay-tabs button{height:40px;border-radius:13px;background:#111722;border:1px solid var(--line);color:#aeb7ca;font-size:12px;font-weight:950}.pay-tabs button.active{color:#fff;border-color:#f8c75d;background:#171b23}.amounts{display:grid;gap:8px}.amount{width:100%;min-height:62px;border-radius:18px;border:1px solid var(--line);background:#111722;display:flex;align-items:center;gap:11px;padding:10px 12px;text-align:left}.amount.active{border-color:#f8c75d;box-shadow:0 0 0 3px rgba(248,199,93,.08)}.radio{margin-left:auto;width:21px;height:21px;border-radius:50%;border:1px solid #5b6477}.amount.active .radio{border:6px solid #f8c75d}.note{border-radius:17px;border:1px solid #46371b;background:#15120d;color:#e3cc9b;padding:12px;font-size:13px;font-weight:780;line-height:1.35}.confirm{width:100%;margin-top:10px}
+.modal-card{max-width:340px;border-radius:28px;text-align:center;padding:24px 18px;animation:pop .22s cubic-bezier(.2,.8,.2,1)}@keyframes pop{from{opacity:.4;transform:scale(.94)}to{opacity:1;transform:none}}.status-icon{width:78px;height:78px;border-radius:26px;margin:0 auto 14px;display:grid;place-items:center}.status-icon.ok{background:linear-gradient(180deg,#74f2b5,#20c879);color:#06120c}.status-icon.bad{background:linear-gradient(180deg,#ff91a5,#ee3c60);color:#24060c}.status-icon.wait{background:linear-gradient(180deg,#ffe69b,#f4ae2e);color:#160f05}.status-icon svg{width:38px}.modal-card h2{margin:0 0 8px}.modal-card p{margin:0 0 15px;color:#c8cfdd;font-size:14px;line-height:1.42;font-weight:760}.preview{display:none;margin-bottom:12px;border-radius:16px;background:#17120d;border:1px solid #4f3b18;color:#ffe0a0;padding:10px 12px;font-size:12px;font-weight:800;line-height:1.34}.preview.show{display:block}.splash{position:absolute;z-index:100;inset:0;display:grid;place-items:center;background:radial-gradient(420px 320px at 50% 34%,rgba(248,199,93,.18),transparent 68%),linear-gradient(180deg,#090a10,#030406);transition:.35s opacity,.35s visibility}.splash.hide{opacity:0;visibility:hidden}.splash-card{text-align:center;width:min(330px,90%)}.loader-visual{width:132px;height:118px;margin:0 auto 18px;filter:drop-shadow(0 24px 46px rgba(248,183,50,.22));animation:float 3s ease-in-out infinite}.loader-visual svg{width:100%;height:100%}.splash h1{margin:0;font-size:34px;letter-spacing:0}.splash p{margin:7px 0 0;color:#b5bed0;font-weight:850}.loadbar{height:9px;margin:18px auto 0;border-radius:999px;background:#0d1119;border:1px solid #222b3c;overflow:hidden}.loadbar i{display:block;height:100%;width:44%;border-radius:999px;background:linear-gradient(90deg,#f4ae2e,#ffe69b);animation:bar 1.25s ease-in-out infinite}@keyframes bar{0%{transform:translateX(-110%)}100%{transform:translateX(235%)}}.empty{padding:14px;border-radius:18px;background:#0d121b;border:1px solid var(--line);color:var(--muted);font-weight:760;font-size:13px;line-height:1.4}.hidden{display:none!important}
 </style>
 </head>
 <body>
 <div class="app">
-  <div class="bg"></div>
-  <div class="version">UI v11</div>
-  <main class="screen" id="screen"></main>
+  <div class="ambient"></div>
+  <main class="view" id="view"></main>
   <nav class="nav" id="nav"></nav>
-  <div class="sheet" id="topupSheet"></div>
-  <div class="status" id="statusBox"></div>
-  <div class="splash" id="splash"><div class="splash-card"><div class="loader-orb"><div class="loader-case" id="loaderCase"></div></div><h1>&marooow</h1><p>premium mini app</p><div class="loadbar"><i></i></div><div class="load-step" id="loadStep">загрузка интерфейса</div></div></div>
+  <div class="sheet" id="sheet"></div>
+  <div class="modal" id="modal"></div>
+  <div class="splash" id="splash">
+    <div class="splash-card">
+      <div class="loader-visual" id="loaderVisual"></div>
+      <h1>&marooow</h1>
+      <p>Mini App</p>
+      <div class="loadbar"><i></i></div>
+    </div>
+  </div>
 </div>
 <script>
 const tg = window.Telegram?.WebApp || null;
-try{tg?.ready?.();tg?.expand?.();tg?.setHeaderColor?.('#05060a');tg?.setBackgroundColor?.('#05060a');tg?.setBottomBarColor?.('#05060a');tg?.disableVerticalSwipes?.();}catch(e){}
+try{tg?.ready?.();tg?.expand?.();tg?.setHeaderColor?.('#07080c');tg?.setBackgroundColor?.('#07080c');tg?.setBottomBarColor?.('#07080c');tg?.disableVerticalSwipes?.();}catch(e){}
+
 const initData = tg?.initData || '';
 const initUnsafe = tg?.initDataUnsafe || {};
-const qs = new URLSearchParams(location.search);
-let state={tab:'bonus',authOk:false,telegram:{},user:{stars:0,level:1,exp:0,next_level_exp:10000,wins_count:0,ref_link:''},chance:{base:3,bonus:0,final:3,active_refs:0,pending_refs:0,attempts_7d:0,cap:3},ton:{enabled:false,receiver:'',stars_per_ton:170,verified_mode:false},winners:[],leaderboard:{refs:[],activity:[]},selectedAmount:null,topupMode:'stars'};
-const $=(s,p=document)=>p.querySelector(s); const screen=$('#screen'), nav=$('#nav'), sheet=$('#topupSheet'), statusBox=$('#statusBox');
-const svg={
-star:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.2l2.9 6 6.6 1-4.8 4.6 1.2 6.5-5.9-3.1-5.9 3.1 1.2-6.5-4.8-4.6 6.6-1 2.9-6z"/></svg>',
-gift:'<svg viewBox="0 0 24 24" fill="none"><path d="M4 10h16v10H4V10zM3 7h18v3H3V7zM12 7v13M7.5 7C5.6 7 5 5.8 5.35 4.85 6 3.1 8.7 3.7 12 7c3.3-3.3 6-3.9 6.65-2.15C19 5.8 18.4 7 16.5 7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',
-link:'<svg viewBox="0 0 24 24" fill="none"><path d="M10 14a5 5 0 0 0 7.1 0l1.9-1.9A5 5 0 0 0 12 5l-1.1 1.1M14 10a5 5 0 0 0-7.1 0L5 11.9A5 5 0 1 0 12 19l1.1-1.1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
-bolt:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M13 2L4 14h7l-1 8 10-13h-7l1-7z"/></svg>',
-pass:'<svg viewBox="0 0 24 24" fill="none"><path d="M6 3h12v18l-6-3-6 3V3z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M9 7h6M9 11h6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
-game:'<svg viewBox="0 0 24 24" fill="none"><path d="M7 10h10a4 4 0 0 1 3.8 2.8l.8 2.7a3 3 0 0 1-5 3l-1.8-1.8H9.2l-1.8 1.8a3 3 0 0 1-5-3l.8-2.7A4 4 0 0 1 7 10z" stroke="currentColor" stroke-width="1.8"/><path d="M8 13v3M6.5 14.5h3M15.5 14.5h.01M18 13.5h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
-diamond:'<svg viewBox="0 0 24 24" fill="none"><path d="M4 8l4-4h8l4 4-8 12L4 8z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M8 4l4 16 4-16M4 8h16" stroke="currentColor" stroke-width="1.4"/></svg>',
-user:'<svg viewBox="0 0 24 24" fill="none"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21a8 8 0 0 1 16 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
-ton:'<svg viewBox="0 0 24 24" fill="none"><path d="M4 5h16l-8 14L4 5z" fill="#35b9ff"/><path d="M7 7h10l-5 9-5-9z" stroke="white" stroke-width="1.5" stroke-linejoin="round"/></svg>',
-send:'<svg viewBox="0 0 24 24" fill="none"><path d="M21 4L3 11l7 3 3 7 8-17z" fill="#5aaeff"/><path d="M10 14l4-4" stroke="white" stroke-width="1.7" stroke-linecap="round"/></svg>',
-close:'<svg viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>',
-check:'<svg viewBox="0 0 24 24" fill="none"><path d="M5 12.5l4 4L19 7" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>',
-cross:'<svg viewBox="0 0 24 24" fill="none"><path d="M7 7l10 10M17 7L7 17" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>',
-copy:'<svg viewBox="0 0 24 24" fill="none"><path d="M8 8h12v12H8V8zM4 16V4h12" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>',
-case:'<svg viewBox="0 0 220 170" fill="none"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#FFE58B"/><stop offset="1" stop-color="#F0A01E"/></linearGradient></defs><ellipse cx="110" cy="146" rx="88" ry="16" fill="#000" opacity=".35"/><rect x="30" y="50" width="160" height="88" rx="20" fill="#0B0D12" stroke="url(#g)" stroke-width="6"/><path d="M50 50V35c0-11 9-20 20-20h80c11 0 20 9 20 20v15" stroke="url(#g)" stroke-width="12" stroke-linecap="round"/><path d="M30 82h160M70 50v88M150 50v88" stroke="#72490F" stroke-width="5" opacity=".85"/><path d="M110 70l12 25 27 4-20 19 5 27-24-13-24 13 5-27-20-19 27-4 12-25z" fill="url(#g)"/><rect x="91" y="78" width="38" height="42" rx="10" fill="#12151E" stroke="url(#g)" stroke-width="4"/></svg>'
+const view = document.getElementById('view');
+const nav = document.getElementById('nav');
+const sheet = document.getElementById('sheet');
+const modal = document.getElementById('modal');
+const splash = document.getElementById('splash');
+
+const svg = {
+  star:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.4l2.9 5.9 6.5 1-4.7 4.6 1.1 6.5-5.8-3.1-5.8 3.1 1.1-6.5-4.7-4.6 6.5-1L12 2.4z"/></svg>',
+  gift:'<svg viewBox="0 0 24 24" fill="none"><path d="M4 10h16v10H4V10zM3 7h18v3H3V7zM12 7v13M8.4 7C6.5 7 6 5.8 6.4 4.9 7 3.2 9.4 3.8 12 7c2.6-3.2 5-3.8 5.6-2.1.4.9-.1 2.1-2 2.1" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  link:'<svg viewBox="0 0 24 24" fill="none"><path d="M10 14a5 5 0 0 0 7.1 0l1.5-1.5a5 5 0 0 0-7.1-7.1L10.4 6.5M14 10a5 5 0 0 0-7.1 0l-1.5 1.5a5 5 0 0 0 7.1 7.1l1.1-1.1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+  bolt:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M13 2L4 14h7l-1 8 10-13h-7l1-7z"/></svg>',
+  pass:'<svg viewBox="0 0 24 24" fill="none"><path d="M6 3h12v18l-6-3-6 3V3z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M9 8h6M9 12h6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+  game:'<svg viewBox="0 0 24 24" fill="none"><path d="M7 10h10a4 4 0 0 1 3.8 2.8l.8 2.7a3 3 0 0 1-5 3l-1.8-1.8H9.2l-1.8 1.8a3 3 0 0 1-5-3l.8-2.7A4 4 0 0 1 7 10z" stroke="currentColor" stroke-width="1.8"/><path d="M8 13v3M6.5 14.5h3M15.5 14.5h.01M18 13.5h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+  diamond:'<svg viewBox="0 0 24 24" fill="none"><path d="M4 8l4-4h8l4 4-8 12L4 8z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M8 4l4 16 4-16M4 8h16" stroke="currentColor" stroke-width="1.4"/></svg>',
+  user:'<svg viewBox="0 0 24 24" fill="none"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21a8 8 0 0 1 16 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+  ton:'<svg viewBox="0 0 24 24" fill="none"><path d="M4 5h16l-8 14L4 5z" fill="#45bfff"/><path d="M7 7h10l-5 9-5-9z" stroke="white" stroke-width="1.5" stroke-linejoin="round"/></svg>',
+  copy:'<svg viewBox="0 0 24 24" fill="none"><path d="M8 8h12v12H8V8zM4 16V4h12" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>',
+  close:'<svg viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>',
+  check:'<svg viewBox="0 0 24 24" fill="none"><path d="M5 12.5l4 4L19 7" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  cross:'<svg viewBox="0 0 24 24" fill="none"><path d="M7 7l10 10M17 7L7 17" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>',
+  case:'<svg viewBox="0 0 220 170" fill="none"><defs><linearGradient id="caseG" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#FFEAA8"/><stop offset="1" stop-color="#F4A62B"/></linearGradient></defs><ellipse cx="110" cy="146" rx="88" ry="16" fill="#000" opacity=".36"/><rect x="30" y="52" width="160" height="86" rx="20" fill="#0B0D12" stroke="url(#caseG)" stroke-width="6"/><path d="M52 52V36c0-11 9-20 20-20h76c11 0 20 9 20 20v16" stroke="url(#caseG)" stroke-width="12" stroke-linecap="round"/><path d="M30 83h160M72 52v86M148 52v86" stroke="#6E4712" stroke-width="5" opacity=".86"/><path d="M110 70l12 25 27 4-20 19 5 27-24-13-24 13 5-27-20-19 27-4 12-25z" fill="url(#caseG)"/><rect x="91" y="80" width="38" height="40" rx="10" fill="#12151E" stroke="url(#caseG)" stroke-width="4"/></svg>'
 };
-function icon(name,cls=''){return `<span class="ico ${cls}">${svg[name]||svg.star}</span>`}
-function safe(v){return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
-function fmt(n){return Number(n||0).toLocaleString('ru-RU')} function money(n){return Number(n||0).toLocaleString('ru-RU',{maximumFractionDigits:4})}
-function wait(ms){return new Promise(r=>setTimeout(r,ms))}
-async function api(path,body={},method='POST',timeout=4200){const ac=new AbortController();const t=setTimeout(()=>ac.abort(),timeout);try{const opts={method,headers:{'Content-Type':'application/json'},cache:'no-store',signal:ac.signal};if(method!=='GET')opts.body=JSON.stringify({initData,...body});const r=await fetch(path,opts);const data=await r.json().catch(()=>({ok:false,error:'bad_json'}));if(!r.ok||data.ok===false)throw data;return data}finally{clearTimeout(t)}}
-function fallbackState(){const u=initUnsafe?.user||{};return {ok:true,authOk:false,telegram:{id:u.id||0,username:u.username||'',first_name:u.first_name||'Guest',photo_url:u.photo_url},user:{telegram_id:u.id||0,username:u.username||'',first_name:u.first_name||'Guest',photo_url:u.photo_url,stars:0,exp:0,level:1,next_level_exp:10000,wins_count:0,ref_link:''},chance:{base:3,bonus:0,final:3,active_refs:0,pending_refs:0,attempts_7d:0,cap:3},ton:{enabled:false,receiver:'',stars_per_ton:170,verified_mode:false}}}
-function toast(type,title,msg){statusBox.innerHTML=`<div class="status-card"><div class="status-mark ${type}">${icon(type==='ok'?'check':type==='bad'?'cross':'bolt')}</div><h2>${safe(title)}</h2><p>${safe(msg||'')}</p><button class="btn" onclick="closeStatus()">Понятно</button></div>`;statusBox.classList.add('show')}
-function closeStatus(){statusBox.classList.remove('show')}
-function avatar(){const p=state.user?.photo_url||state.telegram?.photo_url;return p?`<img src="${safe(p)}" alt="avatar">`:icon('user','gold')}
-function uname(){return state.telegram?.username?'@'+state.telegram.username:(state.telegram?.first_name||state.user?.first_name||'marooow')}
-function top(){return `<div class="top"><div class="brand"><div class="brand-logo">${icon('star')}</div><div class="brand-title"><b>&marooow</b><span>кейсы · игры · подарки</span></div></div><div class="pills"><button class="pill gold" onclick="copyRef()">${icon('link')} Реф.</button><button class="pill" onclick="openTopup()">${icon('star','gold')} ${fmt(state.user?.stars||0)} +</button></div></div>${!state.authOk?`<div class="preview show">Preview-режим: Telegram не передал защищённую авторизацию. Интерфейс работает, но пополнение и начисления доступны только через свежую WebApp-кнопку /miniapp.</div>`:''}`}
-function shell(){navRender();if(state.tab==='bonus')bonus();if(state.tab==='pass')pass();if(state.tab==='games')games();if(state.tab==='cases')cases();if(state.tab==='profile')profile()}
-function bonus(){screen.innerHTML=`<div class="screen-inner">${top()}<section class="hero"><h1>Ежедневные<br>бонусы</h1><p>Забирай награды, прокачивай шанс и участвуй в дропах.</p><div class="hero-actions"><button class="btn" onclick="claimDaily()">Забрать</button><button class="btn ghost" onclick="setTab('profile')">Профиль</button></div><div class="hero-art">${svg.case}</div></section><div class="statgrid"><div class="stat"><span>Твой шанс</span><b>${state.chance?.final||3}%</b></div><div class="stat"><span>Активность 7д</span><b>${fmt(state.chance?.attempts_7d||0)}</b></div></div><section class="section"><div class="section-head"><h2>Быстрые действия</h2><span>premium</span></div><div class="grid"><button class="card" onclick="openTopup()"><div class="mini-icon">${icon('star')}</div><h3>Пополнить</h3><p>Stars или TON</p></button><button class="card" onclick="copyRef()"><div class="mini-icon">${icon('link')}</div><h3>Рефералка</h3><p>повышай шанс</p></button></div></section></div>`}
-function pass(){const exp=state.user?.exp||0,next=state.user?.next_level_exp||10000,p=Math.min(100,Math.round(exp/next*100));screen.innerHTML=`<div class="screen-inner">${top()}<section class="hero"><h1>Battle Pass</h1><p>Уровни, задания и прогресс за активность.</p><div class="hero-actions"><button class="btn" onclick="setTab('games')">Фарм EXP</button></div><div class="hero-art">${svg.pass}</div></section><section class="section"><div class="profile"><div class="avatar">${avatar()}</div><div><div class="profile-name">Level ${state.user?.level||1}</div><div class="profile-id">${fmt(exp)} / ${fmt(next)} EXP</div></div></div><div class="progress"><div style="width:${p}%"></div></div></section><section class="section"><div class="rows"><div class="row"><div class="mini-icon">${icon('bolt')}</div><div class="row-main"><b>Комментируй посты</b><span>активность влияет на шанс</span></div></div><div class="row"><div class="mini-icon">${icon('link')}</div><div class="row-main"><b>Зови друзей</b><span>+0.1% за активного реферала</span></div></div></div></section></div>`}
-function games(){screen.innerHTML=`<div class="screen-inner">${top()}<section class="section"><div class="section-head"><h2>Мини-игры</h2><span>fan demo</span></div><div class="grid"><button class="card" onclick="play('plinko')"><div class="mini-icon">${icon('game')}</div><h3>PLINKO</h3><p>ивентовая мини-игра</p></button><button class="card" onclick="play('crash')"><div class="mini-icon">${icon('bolt')}</div><h3>CRASH</h3><p>без ставок и вывода</p></button><button class="card wide"><h3>Безопасный режим</h3><p>Игры фановые: без казино, ставок и реального вывода. Награды только внутри проекта.</p></button></div></section></div>`}
-function cases(){screen.innerHTML=`<div class="screen-inner">${top()}<section class="hero"><h1>Кейсы</h1><p>Витрины для ивентов, промо-дропов и будущих наград.</p><div class="hero-actions"><button class="btn" onclick="play('bear-case')">Открыть демо</button></div><div class="hero-art">${svg.case}</div></section><section class="section"><div class="grid"><button class="card" onclick="play('bear-case')"><div class="mini-icon">${icon('gift')}</div><h3>Bear Case</h3><p>скоро</p></button><button class="card" onclick="loadGifts(true)"><div class="mini-icon">${icon('diamond')}</div><h3>NFT Gifts</h3><p>каталог</p></button></div></section><section class="section" id="giftsPreview"></section></div>`;loadGifts(false)}
-function profile(){screen.innerHTML=`<div class="screen-inner">${top()}<section class="section"><div class="profile"><div class="avatar">${avatar()}</div><div><div class="profile-name">${safe(uname())}</div><div class="profile-id">ID ${state.user?.telegram_id||state.telegram?.id||'—'} · ${fmt(state.user?.stars||0)} stars</div></div></div><div class="copybox"><input readonly value="${safe(state.user?.ref_link||'нет ссылки')}"><button onclick="copyRef()">${icon('copy')}</button></div></section><section class="section"><div class="statgrid"><div class="stat"><span>Активных рефов</span><b>${fmt(state.chance?.active_refs||0)}</b></div><div class="stat"><span>Побед</span><b>${fmt(state.user?.wins_count||0)}</b></div></div></section><section class="section"><div class="section-head"><h2>Инвентарь</h2><span>подарки</span></div><div class="rows" id="inventory"><div class="row"><div class="mini-icon">${icon('gift')}</div><div class="row-main"><b>Загрузка</b><span>проверяем подарки</span></div></div></div></section></div>`;loadInventory()}
-function navRender(){const items=[['bonus','gift','Бонусы'],['pass','pass','Пропуск'],['games','game','Игры'],['cases','diamond','Кейсы'],['profile','user','Профиль']];nav.innerHTML=items.map(([id,ic,t])=>`<button class="${state.tab===id?'active':''}" onclick="setTab('${id}')">${icon(ic)}<span>${t}</span></button>`).join('')}
-function setTab(t){state.tab=t;shell();try{tg?.HapticFeedback?.selectionChanged?.()}catch(e){}}
-async function bootstrap(){document.getElementById('loaderCase').innerHTML=svg.case;const steps=['загрузка интерфейса','подключение Telegram','получение профиля','подготовка витрин'];let si=0;const st=setInterval(()=>{$('#loadStep').textContent=steps[++si%steps.length]},650);let data=null;try{data=await api('/api/me',{},'POST',4500);state={...state,...data,authOk:true}}catch(e){state={...state,...fallbackState(),authOk:false}}clearInterval(st);shell();setTimeout(()=>$('#splash').classList.add('hide'),520);loadSideData()}
-async function loadSideData(){try{state.winners=(await fetch('/api/winners',{cache:'no-store'}).then(r=>r.json())).items||[]}catch(e){}try{state.leaderboard=await fetch('/api/leaderboard',{cache:'no-store'}).then(r=>r.json())}catch(e){}}
-async function claimDaily(){if(!state.authOk)return toast('bad','Нет авторизации','Открой через свежую кнопку /miniapp.');try{toast('wait','Проверяем','Начисляем ежедневный бонус...');const r=await api('/api/daily');closeStatus();toast('ok','Бонус получен',`+${r.stars_added} stars и +${r.exp_added} EXP`);await bootstrap()}catch(e){toast('bad','Не получилось',e.message||'Бонус пока недоступен')}}
-async function play(game){if(!state.authOk)return toast('bad','Нет авторизации','Открой через кнопку бота.');try{toast('wait','Запуск','Крутим анимацию...');const r=await api('/api/play/demo',{game});closeStatus();toast('ok','Готово',`+${r.exp_added} EXP · очки ${r.demo_points}`);await bootstrap()}catch(e){toast('bad','Ошибка',e.message||'Попробуй позже')}}
-function openTopup(){state.selectedAmount=null;state.topupMode='stars';renderTopup();sheet.classList.add('show')}function closeSheet(){sheet.classList.remove('show')}function setTopupMode(m){state.topupMode=m;state.selectedAmount=null;renderTopup()}function selectAmount(a){state.selectedAmount=a;renderTopup()}
-function renderTopup(){const amounts=[30,100,200,500,1000,2500,5000];sheet.innerHTML=`<div class="sheet-card"><div class="sheet-top"><h2>Пополнение баланса</h2><button class="close" onclick="closeSheet()">${icon('close')}</button></div><div class="tabs">${['stars','ton','send','gifts'].map(m=>`<button class="tab ${state.topupMode===m?'active':''}" onclick="setTopupMode('${m}')">${icon(m==='stars'?'star':m==='ton'?'ton':m==='send'?'send':'gift')} ${m==='stars'?'Stars':m==='ton'?'TON':m==='send'?'Send':'Gifts'}</button>`).join('')}</div><input class="promo" placeholder="Промокод"><div id="topupBody"></div><button class="btn confirm" onclick="confirmTopup()" ${state.selectedAmount?'':'disabled'}>Подтвердить</button></div>`;renderTopupBody()}
-function renderTopupBody(){const b=$('#topupBody');if(state.topupMode==='gifts'){b.innerHTML='<div class="note">Отправь подарок проекту — после проверки админ начислит баланс вручную. Авто-импорт личного инвентаря Telegram обычным ботам недоступен.</div>';return}if(state.topupMode==='send'){b.innerHTML='<div class="note">Send-оплата визуально готова. Сейчас используй Stars или TON.</div>'+amountList([30,100,200,500],true);return}if(state.topupMode==='ton'){b.innerHTML=`<div class="note">TON перевод идёт на кошелёк проекта. После оплаты нажми «Проверить».</div>${amountList([30,100,200,500,1000,2500],true)}`;return}b.innerHTML=amountList([30,100,200,500,1000,2500,5000],false)}
-function amountList(arr,ton=false){return `<div class="amounts">${arr.map(a=>`<button class="amount ${state.selectedAmount===a?'active':''}" onclick="selectAmount(${a})"><span class="star-flat">${svg.star}</span><span class="row-main"><b>${fmt(a)} звёзд</b><span>${ton?'≈ '+money(a/(state.ton?.stars_per_ton||170))+' TON':'Telegram Stars'}</span></span><i class="radio"></i></button>`).join('')}</div>`}
-async function confirmTopup(){if(!state.authOk)return toast('bad','Нет авторизации','Открой через кнопку бота.');if(!state.selectedAmount)return;if(state.topupMode==='stars')return payStars();if(state.topupMode==='ton')return payTon();toast('bad','Скоро','Этот способ пока в разработке')}
-async function payStars(){try{toast('wait','Создаём счёт','Сейчас откроется Telegram invoice.');const r=await api('/api/topup',{amount:state.selectedAmount});closeStatus();if(tg?.openInvoice){tg.openInvoice(r.invoice_url,st=>{if(st==='paid')toast('ok','Оплата прошла','Баланс скоро обновится.');else toast('bad','Оплата не прошла','Счёт закрыт или отменён.')})}else location.href=r.invoice_url}catch(e){toast('bad','Ошибка оплаты',e.message||e.error||'Не удалось создать счёт')}}
-async function payTon(){try{toast('wait','Готовим TON оплату','Создаём уникальный платёж.');const r=await api('/api/ton/create',{stars_amount:state.selectedAmount});closeStatus();const link=`ton://transfer/${encodeURIComponent(r.address)}?amount=${encodeURIComponent(r.amount_nano)}&text=${encodeURIComponent(r.comment)}`;sheet.innerHTML=`<div class="sheet-card"><div class="sheet-top"><h2>TON оплата</h2><button class="close" onclick="closeSheet()">${icon('close')}</button></div><div class="note">Переведи <b>${money(r.amount_ton)} TON</b> на кошелёк ниже. Комментарий обязателен.</div><div class="rows" style="margin-top:12px"><div class="row"><div class="row-main"><b>Адрес</b><span>${safe(r.address)}</span></div><button class="btn dark" onclick="copyText('${safe(r.address)}')">Copy</button></div><div class="row"><div class="row-main"><b>Комментарий</b><span>${safe(r.comment)}</span></div><button class="btn dark" onclick="copyText('${safe(r.comment)}')">Copy</button></div></div><a class="btn confirm" style="display:grid;place-items:center;text-decoration:none" href="${link}">Открыть кошелёк</a><button class="btn ghost confirm" onclick="checkTon(${r.deposit_id})">Проверить оплату</button></div>`}catch(e){toast('bad','TON ошибка',e.message||e.error||'Не удалось создать платёж')}}
-async function checkTon(id){try{toast('wait','Проверяем','Ищем транзакцию в сети TON.');const r=await api('/api/ton/confirm',{deposit_id:id});closeStatus();if(r.status==='paid')toast('ok','Оплата прошла',`Начислено ${fmt(r.stars_added)} stars.`);else toast('wait','Ожидаем подтверждения',r.message||'Транзакция ещё индексируется.')}catch(e){toast('bad','Не найдено',e.message||'Платёж пока не подтверждён')}}
-function copyText(t){try{navigator.clipboard?.writeText(t);tg?.HapticFeedback?.notificationOccurred?.('success')}catch(e){}toast('ok','Скопировано','Данные сохранены')}function copyRef(){const l=state.user?.ref_link;if(!l)return toast('bad','Нет ссылки','Авторизуйся через Telegram.');copyText(l)}
-async function loadInventory(){const el=$('#inventory');if(!el)return;if(!state.authOk){el.innerHTML=`<div class="row"><div class="mini-icon">${icon('gift')}</div><div class="row-main"><b>Preview</b><span>инвентарь появится после авторизации</span></div></div>`;return}try{const r=await api('/api/inventory');const items=r.items||[];el.innerHTML=items.length?items.map(x=>`<div class="row"><div class="mini-icon">${icon('gift')}</div><div class="row-main"><b>${safe(x.prize_name)}</b><span>${safe(x.status)} · ${safe(String(x.created_at).slice(0,10))}</span></div></div>`).join(''):`<div class="row"><div class="mini-icon">${icon('gift')}</div><div class="row-main"><b>Пусто</b><span>выигранные подарки появятся здесь</span></div></div>`}catch(e){el.innerHTML=`<div class="row"><div class="mini-icon">${icon('gift')}</div><div class="row-main"><b>Не загрузилось</b><span>попробуй позже</span></div></div>`}}
-async function loadGifts(scroll=false){const el=$('#giftsPreview');if(!el)return;try{const r=await fetch('/api/gift-catalog',{cache:'no-store'}).then(r=>r.json());const items=(r.items||[]).slice(0,7);el.innerHTML=`<div class="section-head"><h2>Telegram Gifts</h2><span>каталог</span></div><div class="rows">${items.length?items.map(g=>`<div class="row"><div class="mini-icon">${g.media_url?`<img src="${g.media_url}" style="width:38px;height:38px;object-fit:contain">`:icon('gift')}</div><div class="row-main"><b>${safe(g.id).slice(0,18)}...</b><span>${fmt(g.star_count)} stars · ${g.remaining_count??'∞'} осталось</span></div></div>`).join(''):`<div class="row"><div class="mini-icon">${icon('gift')}</div><div class="row-main"><b>Каталог пуст</b><span>Telegram Gifts недоступны</span></div></div>`}</div>`;if(scroll)el.scrollIntoView({behavior:'smooth'})}catch(e){el.innerHTML=`<div class="note">Каталог подарков временно недоступен.</div>`}}
-window.setTab=setTab;window.openTopup=openTopup;window.closeSheet=closeSheet;window.setTopupMode=setTopupMode;window.selectAmount=selectAmount;window.confirmTopup=confirmTopup;window.closeStatus=closeStatus;window.copyRef=copyRef;window.claimDaily=claimDaily;window.play=play;window.copyText=copyText;window.checkTon=checkTon;window.loadGifts=loadGifts;
+
+let state = {
+  tab:'home',
+  authOk:false,
+  loading:true,
+  telegram:{},
+  user:{stars:0,level:1,exp:0,next_level_exp:10000,wins_count:0,entries_count:0,ref_link:''},
+  chance:{base:3,bonus:0,final:3,active_refs:0,pending_refs:0,attempts_7d:0,cap:3},
+  ton:{enabled:false,receiver:'',stars_per_ton:170,verified_mode:false},
+  drops:{active_title:'Активный дроп',prize:'подарок',chance_percent:3,gift_id_set:false},
+  gifts:[], inventory:[], winners:[], leaderboard:{refs:[],activity:[]}, topupMode:'stars', selectedAmount:100
+};
+
+const icon = (name, cls='') => `<span class="icon ${cls}">${svg[name] || svg.star}</span>`;
+const safe = value => String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[ch]));
+const fmt = value => Number(value || 0).toLocaleString('ru-RU');
+const pct = value => `${Number(value || 0).toLocaleString('ru-RU',{maximumFractionDigits:1})}%`;
+const money = value => Number(value || 0).toLocaleString('ru-RU',{maximumFractionDigits:5});
+const short = value => String(value || '').length > 18 ? `${String(value).slice(0,9)}...${String(value).slice(-6)}` : String(value || '');
+function vibe(type='light'){try{tg?.HapticFeedback?.impactOccurred?.(type)}catch(e){}}
+function notify(type='success'){try{tg?.HapticFeedback?.notificationOccurred?.(type)}catch(e){}}
+
+async function api(path, body={}, method='POST', timeout=6500){
+  const controller = new AbortController();
+  const timer = setTimeout(()=>controller.abort(), timeout);
+  try{
+    const options = {method, cache:'no-store', signal:controller.signal, headers:{}};
+    if(method !== 'GET'){
+      options.headers['Content-Type'] = 'application/json';
+      options.body = JSON.stringify({initData, ...body});
+    }
+    const response = await fetch(path, options);
+    const data = await response.json().catch(()=>({ok:false,error:'bad_json'}));
+    if(!response.ok || data.ok === false) throw data;
+    return data;
+  }finally{
+    clearTimeout(timer);
+  }
+}
+
+function previewState(){
+  const u = initUnsafe?.user || {};
+  const id = u.id || 0;
+  return {
+    ok:true,
+    telegram:{id, username:u.username || '', first_name:u.first_name || 'Guest', photo_url:u.photo_url || ''},
+    user:{telegram_id:id, username:u.username || '', first_name:u.first_name || 'Guest', photo_url:u.photo_url || '', stars:0, exp:1800, level:1, next_level_exp:10000, entries_count:0, wins_count:0, ref_link:id ? `https://t.me/marooowbot?start=ref_${id}` : ''},
+    chance:{base:3,bonus:0,final:3,cap:3,active_refs:0,pending_refs:0,attempts_7d:0},
+    ton:{enabled:false,receiver:'',stars_per_ton:170,verified_mode:false},
+    drops:{active_title:'Активный дроп', prize:'подарок', chance_percent:3, gift_id_set:false}
+  };
+}
+
+function top(){
+  return `<div class="top">
+    <div class="brand"><div class="mark">&</div><div><b>&marooow</b><span>gifts · drops · games</span></div></div>
+    <div class="actions">
+      <button class="pill gold" onclick="copyRef()">${icon('link')}Реф</button>
+      <button class="pill" onclick="openTopup()">${icon('star','gold')}${fmt(state.user.stars)} +</button>
+    </div>
+  </div>${state.authOk ? '' : '<div class="preview show">Preview-режим. Для бонусов, оплаты и инвентаря открой Mini App через кнопку в боте.</div>'}`;
+}
+
+function avatar(){
+  const photo = state.user.photo_url || state.telegram.photo_url;
+  if(photo) return `<div class="avatar"><img src="${safe(photo)}" alt=""></div>`;
+  const name = (state.telegram.first_name || state.user.first_name || '&').trim().slice(0,1).toUpperCase();
+  return `<div class="avatar">${safe(name || '&')}</div>`;
+}
+
+function shell(){
+  navRender();
+  const screens = {home, drops, games, gifts, profile};
+  view.innerHTML = `<div class="screen">${(screens[state.tab] || home)()}</div>`;
+}
+
+function home(){
+  const exp = Number(state.user.exp || 0);
+  const next = Math.max(Number(state.user.next_level_exp || 10000), 1);
+  const progress = Math.min(100, Math.round(exp / next * 100));
+  return `${top()}
+    <section class="hero">
+      <h1>Твой центр подарков</h1>
+      <p>Бонусы, шанс на дроп, витрина подарков и быстрый профиль в одном месте.</p>
+      <div class="hero-actions">
+        <button class="btn" onclick="claimDaily()">${icon('star')}Забрать бонус</button>
+        <button class="btn ghost" onclick="setTab('gifts')">${icon('diamond')}Gifts</button>
+      </div>
+      <div class="hero-visual">${svg.case}</div>
+    </section>
+    <div class="stats">
+      <div class="stat"><span>Шанс</span><b>${pct(state.chance.final)}</b></div>
+      <div class="stat"><span>Баланс</span><b>${fmt(state.user.stars)}</b></div>
+      <div class="stat"><span>Побед</span><b>${fmt(state.user.wins_count)}</b></div>
+      <div class="stat"><span>Активность 7д</span><b>${fmt(state.chance.attempts_7d)}</b></div>
+    </div>
+    <section class="panel">
+      <div class="section-head"><h2>Level ${fmt(state.user.level)}</h2><span>${progress}%</span></div>
+      <div class="progress"><i style="width:${Math.max(4,progress)}%"></i></div>
+      <p style="margin-top:10px">${fmt(exp)} / ${fmt(next)} EXP</p>
+    </section>
+    <section class="section">
+      <div class="section-head"><h2>Быстрые действия</h2><span>live</span></div>
+      <div class="grid">
+        <button class="card" onclick="openTopup()"><div class="mini">${icon('star')}</div><h3>Пополнить</h3><p>Stars или TON</p></button>
+        <button class="card" onclick="copyRef()"><div class="mini">${icon('link')}</div><h3>Рефералка</h3><p>+${pct(state.chance.bonus)} к шансу</p></button>
+      </div>
+    </section>
+    <section class="section">
+      <div class="section-head"><h2>Последние победы</h2><button class="btn dark" onclick="refreshSideData()">Обновить</button></div>
+      <div class="stack">${winnerRows(3)}</div>
+    </section>`;
+}
+
+function drops(){
+  const refs = (state.leaderboard.refs || []).slice(0,5);
+  const act = (state.leaderboard.activity || []).slice(0,5);
+  return `${top()}
+    <section class="hero">
+      <h1>${safe(state.drops.active_title || 'Активный дроп')}</h1>
+      <p>Приз: ${safe(state.drops.prize || 'подарок')}. Текущий шанс: ${pct(state.chance.final)}.</p>
+      <div class="hero-actions">
+        <button class="btn" onclick="copyRef()">${icon('link')}Позвать друзей</button>
+        <button class="btn ghost" onclick="setTab('profile')">${icon('user')}Профиль</button>
+      </div>
+      <div class="hero-visual">${svg.case}</div>
+    </section>
+    <div class="stats">
+      <div class="stat"><span>База</span><b>${pct(state.chance.base)}</b></div>
+      <div class="stat"><span>Бонус</span><b>+${pct(state.chance.bonus)}</b></div>
+      <div class="stat"><span>Активных рефов</span><b>${fmt(state.chance.active_refs)}</b></div>
+      <div class="stat"><span>Ожидают</span><b>${fmt(state.chance.pending_refs)}</b></div>
+    </div>
+    <section class="section">
+      <div class="section-head"><h2>Топ рефералов</h2><span>active</span></div>
+      <div class="stack">${leaderRows(refs, 'refs')}</div>
+    </section>
+    <section class="section">
+      <div class="section-head"><h2>Топ активности</h2><span>7 дней</span></div>
+      <div class="stack">${leaderRows(act, 'activity')}</div>
+    </section>`;
+}
+
+function games(){
+  return `${top()}
+    <section class="section">
+      <div class="section-head"><h2>Аркада</h2><span>demo</span></div>
+      <div class="game-stage"><i class="token"></i><i class="spark"></i><i class="spark"></i><i class="spark"></i></div>
+    </section>
+    <section class="section">
+      <div class="grid">
+        <button class="card" onclick="playDemo('plinko')"><div class="mini">${icon('game')}</div><h3>Plinko</h3><p>EXP за демо-раунд</p></button>
+        <button class="card" onclick="playDemo('crash')"><div class="mini">${icon('bolt')}</div><h3>Crash</h3><p>Быстрый старт</p></button>
+        <button class="card wide" onclick="playDemo('arcade')"><div class="mini">${icon('star')}</div><h3>Arcade drop</h3><p>Мини-ивент внутри проекта</p></button>
+      </div>
+    </section>
+    <section class="panel"><h3>Баланс</h3><p>Игры в Mini App работают как фан-режим и начисляют только EXP проекта.</p></section>`;
+}
+
+function gifts(){
+  const items = state.gifts.slice(0,10);
+  const inv = state.inventory.slice(0,6);
+  return `${top()}
+    <section class="hero">
+      <h1>Telegram Gifts</h1>
+      <p>Каталог доступных подарков и твой инвентарь проекта.</p>
+      <div class="hero-actions">
+        <button class="btn" onclick="loadGifts(true)">${icon('diamond')}Обновить</button>
+        <button class="btn ghost" onclick="setTab('profile')">${icon('gift')}Инвентарь</button>
+      </div>
+      <div class="hero-visual">${svg.case}</div>
+    </section>
+    <section class="section">
+      <div class="section-head"><h2>Витрина</h2><span>${fmt(items.length)}</span></div>
+      <div class="stack">${items.length ? items.map(giftRow).join('') : '<div class="empty">Каталог временно недоступен. Проверь /gifts у админа или настрой права бота.</div>'}</div>
+    </section>
+    <section class="section">
+      <div class="section-head"><h2>Мои подарки</h2><span>${fmt(state.inventory.length)}</span></div>
+      <div class="stack">${inv.length ? inv.map(inventoryRow).join('') : '<div class="empty">Выигранные подарки появятся здесь после дропа.</div>'}</div>
+    </section>`;
+}
+
+function profile(){
+  const name = state.telegram.first_name || state.user.first_name || 'marooow';
+  const handle = state.user.username ? `@${state.user.username}` : `ID ${state.user.telegram_id || state.telegram.id || 'preview'}`;
+  return `${top()}
+    <section class="profile-card">
+      ${avatar()}
+      <div class="row-main"><b style="font-size:20px">${safe(name)}</b><span>${safe(handle)} · Level ${fmt(state.user.level)}</span></div>
+    </section>
+    <div class="copybox"><input readonly value="${safe(state.user.ref_link || 'Нет ссылки')}"><button onclick="copyRef()">${icon('copy')}</button></div>
+    <section class="section">
+      <div class="stats">
+        <div class="stat"><span>Stars</span><b>${fmt(state.user.stars)}</b></div>
+        <div class="stat"><span>EXP</span><b>${fmt(state.user.exp)}</b></div>
+        <div class="stat"><span>Участий</span><b>${fmt(state.user.entries_count)}</b></div>
+        <div class="stat"><span>Побед</span><b>${fmt(state.user.wins_count)}</b></div>
+      </div>
+    </section>
+    <section class="section">
+      <div class="section-head"><h2>Инвентарь</h2><button class="btn dark" onclick="loadInventory(true)">Обновить</button></div>
+      <div class="stack">${state.inventory.length ? state.inventory.map(inventoryRow).join('') : '<div class="empty">Пока пусто.</div>'}</div>
+    </section>`;
+}
+
+function navRender(){
+  const items = [['home','gift','Бонусы'],['drops','link','Дропы'],['games','game','Игры'],['gifts','diamond','Gifts'],['profile','user','Профиль']];
+  nav.innerHTML = items.map(([id, ic, text]) => `<button class="${state.tab === id ? 'active' : ''}" onclick="setTab('${id}')">${icon(ic)}<span>${text}</span></button>`).join('');
+}
+
+function winnerRows(limit=20){
+  const rows = state.winners.slice(0, limit);
+  if(!rows.length) return '<div class="empty">Побед пока нет.</div>';
+  return rows.map(row => {
+    const name = row.username ? `@${row.username}` : (row.first_name || `ID ${row.telegram_id || ''}`);
+    return `<div class="row"><div class="mini">${icon('star')}</div><div class="row-main"><b>${safe(name)}</b><span>${safe(row.prize_name || 'подарок')}</span></div></div>`;
+  }).join('');
+}
+
+function leaderRows(rows, kind){
+  if(!rows.length) return '<div class="empty">Данных пока нет.</div>';
+  return rows.map((row, index) => {
+    const name = row.username ? `@${row.username}` : (row.first_name || `ID ${row.telegram_id || ''}`);
+    return `<div class="row"><div class="mini">${index + 1}</div><div class="row-main"><b>${safe(name)}</b><span>${kind === 'refs' ? 'активных рефов' : 'попыток'}: ${fmt(row.score)}</span></div></div>`;
+  }).join('');
+}
+
+function giftRow(g){
+  const media = g.media_url ? `<img class="gift-img" src="${safe(g.media_url)}" alt="" onerror="this.replaceWith(document.createTextNode('${safe(g.emoji || '🎁')}'))">` : safe(g.emoji || '🎁');
+  const left = g.remaining_count == null ? '∞' : fmt(g.remaining_count);
+  return `<div class="row"><div class="mini">${media}</div><div class="row-main"><b>${safe(short(g.id))}</b><span>${fmt(g.star_count)} Stars · осталось ${left}</span></div></div>`;
+}
+
+function inventoryRow(item){
+  const statusMap = {sent:'отправлен', pending:'ожидает', failed:'ошибка', manual_required:'ручная выдача'};
+  const status = statusMap[item.status] || item.status || 'pending';
+  return `<div class="row"><div class="mini">${icon('gift')}</div><div class="row-main"><b>${safe(item.prize_name || 'подарок')}</b><span>${safe(status)} · ${safe(String(item.created_at || '').slice(0,10))}</span></div></div>`;
+}
+
+function setTab(tab){
+  state.tab = tab;
+  shell();
+  vibe('light');
+  if(tab === 'gifts' && !state.gifts.length) loadGifts(false);
+  if(tab === 'profile' && state.authOk) loadInventory(false);
+}
+
+async function bootstrap(){
+  document.getElementById('loaderVisual').innerHTML = svg.case;
+  try{
+    const me = await api('/api/me', {}, 'POST', 6500);
+    state = {...state, ...me, authOk:true, loading:false};
+  }catch(e){
+    state = {...state, ...previewState(), authOk:false, loading:false};
+  }
+  shell();
+  setTimeout(()=>splash.classList.add('hide'), 350);
+  refreshSideData();
+  if(state.authOk) loadInventory(false);
+}
+
+async function refreshSideData(){
+  try{
+    const [wins, leaders] = await Promise.all([
+      api('/api/winners', {}, 'GET', 5000),
+      api('/api/leaderboard', {}, 'GET', 5000)
+    ]);
+    state.winners = wins.items || [];
+    state.leaderboard = leaders || {refs:[],activity:[]};
+    shell();
+  }catch(e){}
+}
+
+async function refreshMe(quiet=false){
+  if(!state.authOk) return;
+  try{
+    const me = await api('/api/me', {}, 'POST', 5000);
+    state = {...state, ...me, authOk:true};
+    if(!quiet) shell();
+  }catch(e){}
+}
+
+async function loadInventory(render=true){
+  if(!state.authOk) return;
+  try{
+    const data = await api('/api/inventory', {}, 'POST', 5000);
+    state.inventory = data.items || [];
+    if(render) shell();
+  }catch(e){}
+}
+
+async function loadGifts(render=true){
+  try{
+    const data = await api('/api/gift-catalog', {}, 'GET', 7000);
+    state.gifts = data.items || [];
+    if(render) shell();
+  }catch(e){
+    state.gifts = [];
+    if(render) showStatus('bad', 'Каталог недоступен', e.message || 'Не удалось загрузить Telegram Gifts.');
+  }
+}
+
+async function claimDaily(){
+  if(!state.authOk) return showStatus('bad','Нет авторизации','Открой Mini App через кнопку в боте.');
+  showStatus('wait','Проверяем бонус','Секунду...');
+  try{
+    const data = await api('/api/daily', {}, 'POST', 6500);
+    closeStatus();
+    await refreshMe(true);
+    shell();
+    showStatus('ok','Бонус получен',`+${fmt(data.stars_added)} Stars и +${fmt(data.exp_added)} EXP`);
+  }catch(e){
+    showStatus('bad','Не получилось', e.message || 'Бонус пока недоступен.');
+  }
+}
+
+async function playDemo(game){
+  if(!state.authOk) return showStatus('bad','Нет авторизации','Открой Mini App через кнопку в боте.');
+  showStatus('wait','Запуск','Готовим демо-раунд...');
+  try{
+    const data = await api('/api/play/demo', {game}, 'POST', 6500);
+    closeStatus();
+    await refreshMe(true);
+    shell();
+    showStatus('ok','Раунд завершён',`+${fmt(data.exp_added)} EXP · очки ${fmt(data.demo_points)}`);
+  }catch(e){
+    showStatus('bad','Ошибка игры', e.message || 'Попробуй позже.');
+  }
+}
+
+function openTopup(){
+  state.selectedAmount = state.selectedAmount || 100;
+  renderTopup();
+  sheet.classList.add('show');
+  vibe('medium');
+}
+
+function closeSheet(){sheet.classList.remove('show')}
+function setTopupMode(mode){state.topupMode = mode; renderTopup()}
+function selectAmount(amount){state.selectedAmount = amount; renderTopup()}
+
+function renderTopup(){
+  const modes = [['stars','Stars'],['ton','TON'],['send','Send'],['gifts','Gifts']];
+  sheet.innerHTML = `<div class="sheet-card">
+    <div class="sheet-head"><h2>Пополнение</h2><button class="close" onclick="closeSheet()">${icon('close')}</button></div>
+    <div class="pay-tabs">${modes.map(([id,label]) => `<button class="${state.topupMode === id ? 'active' : ''}" onclick="setTopupMode('${id}')">${label}</button>`).join('')}</div>
+    <div id="topupBody"></div>
+  </div>`;
+  renderTopupBody();
+}
+
+function renderTopupBody(){
+  const body = document.getElementById('topupBody');
+  const amounts = [30,100,200,500,1000,2500,5000];
+  if(state.topupMode === 'gifts'){
+    body.innerHTML = `<div class="note">Подарки, выигранные в дропах, отображаются в инвентаре. Импорт личного инвентаря Telegram обычному боту недоступен.</div><div class="stack" style="margin-top:10px">${state.inventory.length ? state.inventory.map(inventoryRow).join('') : '<div class="empty">Инвентарь пуст.</div>'}</div>`;
+    return;
+  }
+  if(state.topupMode === 'send'){
+    body.innerHTML = `<div class="note">Send-вкладка готова визуально. Подключение провайдера можно добавить отдельным шагом.</div>`;
+    return;
+  }
+  body.innerHTML = `${state.topupMode === 'ton' ? `<div class="note">${state.ton.enabled ? `Курс: 1 TON = ${fmt(state.ton.stars_per_ton)} Stars.` : 'TON-кошелёк проекта не настроен.'}</div>` : ''}
+    <div class="amounts" style="margin-top:${state.topupMode === 'ton' ? 10 : 0}px">
+      ${amounts.map(amount => amountButton(amount)).join('')}
+    </div>
+    <button class="btn confirm" onclick="confirmTopup()" ${state.selectedAmount ? '' : 'disabled'}>Продолжить</button>`;
+}
+
+function amountButton(amount){
+  const detail = state.topupMode === 'ton' ? `≈ ${money(amount / (state.ton.stars_per_ton || 170))} TON` : 'Telegram Stars';
+  return `<button class="amount ${state.selectedAmount === amount ? 'active' : ''}" onclick="selectAmount(${amount})">
+    <span class="mini">${icon(state.topupMode === 'ton' ? 'ton' : 'star')}</span>
+    <span class="row-main"><b>${fmt(amount)} Stars</b><span>${detail}</span></span>
+    <i class="radio"></i>
+  </button>`;
+}
+
+function confirmTopup(){
+  if(!state.authOk) return showStatus('bad','Нет авторизации','Открой Mini App через кнопку в боте.');
+  if(state.topupMode === 'stars') return payStars();
+  if(state.topupMode === 'ton') return payTon();
+  showStatus('bad','Скоро','Этот способ пока не подключён.');
+}
+
+async function payStars(){
+  showStatus('wait','Создаём счёт','Telegram откроет оплату Stars.');
+  try{
+    const data = await api('/api/topup', {amount:state.selectedAmount}, 'POST', 6500);
+    closeStatus();
+    if(tg?.openInvoice){
+      tg.openInvoice(data.invoice_url, async status => {
+        if(status === 'paid'){
+          notify('success');
+          showStatus('ok','Оплата прошла','Баланс обновится после сообщения об оплате.');
+          setTimeout(()=>refreshMe(), 1200);
+        }else{
+          showStatus('bad','Оплата не завершена','Счёт закрыт или отменён.');
+        }
+      });
+    }else{
+      location.href = data.invoice_url;
+    }
+  }catch(e){
+    showStatus('bad','Ошибка оплаты', e.message || e.error || 'Не удалось создать счёт.');
+  }
+}
+
+async function payTon(){
+  if(!state.ton.enabled) return showStatus('bad','TON не настроен','Укажи TON_RECEIVER_ADDRESS в переменных проекта.');
+  showStatus('wait','Готовим перевод','Создаём уникальный платёж.');
+  try{
+    const data = await api('/api/ton/create', {stars_amount:state.selectedAmount}, 'POST', 6500);
+    closeStatus();
+    const link = `ton://transfer/${encodeURIComponent(data.address)}?amount=${encodeURIComponent(data.amount_nano)}&text=${encodeURIComponent(data.comment)}`;
+    sheet.innerHTML = `<div class="sheet-card">
+      <div class="sheet-head"><h2>TON перевод</h2><button class="close" onclick="closeSheet()">${icon('close')}</button></div>
+      <div class="note">Переведи ${money(data.amount_ton)} TON. Комментарий обязателен.</div>
+      <div class="stack" style="margin-top:10px">
+        <div class="row"><div class="row-main"><b>Адрес</b><span>${safe(data.address)}</span></div><button class="btn dark" onclick="copyText('${safe(data.address)}')">Copy</button></div>
+        <div class="row"><div class="row-main"><b>Комментарий</b><span>${safe(data.comment)}</span></div><button class="btn dark" onclick="copyText('${safe(data.comment)}')">Copy</button></div>
+      </div>
+      <a class="btn confirm blue" href="${link}">Открыть кошелёк</a>
+      <button class="btn confirm ghost" onclick="checkTon(${Number(data.deposit_id)})">Проверить оплату</button>
+    </div>`;
+  }catch(e){
+    showStatus('bad','TON ошибка', e.message || e.error || 'Не удалось создать платёж.');
+  }
+}
+
+async function checkTon(id){
+  showStatus('wait','Проверяем','Ищем транзакцию в сети TON.');
+  try{
+    const data = await api('/api/ton/confirm', {deposit_id:id}, 'POST', 8000);
+    closeStatus();
+    if(data.status === 'paid'){
+      await refreshMe(true);
+      shell();
+      showStatus('ok','Оплата прошла',`Зачислено ${fmt(data.stars_added)} Stars.`);
+    }else{
+      showStatus('wait','Ожидаем подтверждения', data.message || 'Транзакция ещё индексируется.');
+    }
+  }catch(e){
+    showStatus('bad','Не найдено', e.message || 'Платёж пока не подтверждён.');
+  }
+}
+
+function showStatus(type, title, text){
+  const cls = type === 'ok' ? 'ok' : type === 'wait' ? 'wait' : 'bad';
+  const mark = type === 'bad' ? svg.cross : svg.check;
+  modal.innerHTML = `<div class="modal-card">
+    <div class="status-icon ${cls}">${mark}</div>
+    <h2>${safe(title)}</h2>
+    <p>${safe(text)}</p>
+    <button class="btn ${type === 'wait' ? 'ghost' : ''}" onclick="closeStatus()">Ок</button>
+  </div>`;
+  modal.classList.add('show');
+}
+function closeStatus(){modal.classList.remove('show')}
+
+async function copyText(text){
+  try{await navigator.clipboard?.writeText(String(text || ''));notify('success')}catch(e){}
+  showStatus('ok','Скопировано','Готово.');
+}
+function copyRef(){
+  if(!state.user.ref_link) return showStatus('bad','Нет ссылки','Открой Mini App через кнопку в боте.');
+  copyText(state.user.ref_link);
+}
+
+window.setTab=setTab; window.openTopup=openTopup; window.closeSheet=closeSheet; window.setTopupMode=setTopupMode; window.selectAmount=selectAmount;
+window.confirmTopup=confirmTopup; window.closeStatus=closeStatus; window.copyRef=copyRef; window.claimDaily=claimDaily; window.playDemo=playDemo;
+window.loadGifts=loadGifts; window.loadInventory=loadInventory; window.refreshSideData=refreshSideData; window.copyText=copyText; window.checkTon=checkTon;
+
 bootstrap();
 </script>
 </body>

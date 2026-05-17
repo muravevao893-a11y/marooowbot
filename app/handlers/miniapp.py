@@ -1,7 +1,7 @@
-# app/handlers/miniapp.py
 from __future__ import annotations
 
 import os
+import re
 
 from aiogram import Router
 from aiogram.filters import Command
@@ -9,8 +9,8 @@ from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message, W
 
 router = Router(name="miniapp")
 
-
-DEFAULT_MINI_APP_URL = "https://marooowbot-production.up.railway.app/app?v=13"
+MINI_APP_VERSION = "14"
+DEFAULT_MINI_APP_URL = f"https://marooowbot-production.up.railway.app/app?v={MINI_APP_VERSION}"
 
 
 def get_mini_app_url() -> str:
@@ -20,16 +20,19 @@ def get_mini_app_url() -> str:
         or os.getenv("WEB_APP_URL")
         or DEFAULT_MINI_APP_URL
     )
-
     url = url.strip().strip('"').strip("'")
 
     if not url.startswith(("http://", "https://")):
         url = f"https://{url}"
 
     if "/app" not in url:
-        url = url.rstrip("/") + "/app?v=13"
+        url = url.rstrip("/") + "/app"
 
-    return url
+    if re.search(r"([?&])v=\d+", url):
+        return re.sub(r"([?&])v=\d+", rf"\1v={MINI_APP_VERSION}", url)
+
+    separator = "&" if "?" in url else "?"
+    return f"{url}{separator}v={MINI_APP_VERSION}"
 
 
 def miniapp_keyboard(url: str) -> InlineKeyboardMarkup:
@@ -37,7 +40,7 @@ def miniapp_keyboard(url: str) -> InlineKeyboardMarkup:
         inline_keyboard=[
             [
                 InlineKeyboardButton(
-                    text="🎮 Открыть Mini App",
+                    text="Открыть Mini App",
                     web_app=WebAppInfo(url=url),
                 )
             ]
@@ -50,10 +53,9 @@ async def cmd_miniapp(message: Message) -> None:
     url = get_mini_app_url()
 
     await message.answer(
-        "🎮 <b>&amp;marooow Mini App</b>\n"
+        "<b>&amp;marooow Mini App</b>\n"
         "━━━━━━━━━━━━━━\n\n"
-        "Открывай приложение именно через кнопку ниже.\n"
-        "Так Telegram передаст профиль, аватарку и username.\n\n"
+        "Открывай приложение через кнопку ниже, чтобы Telegram передал профиль, аватар и username.\n\n"
         f"<code>{url}</code>",
         reply_markup=miniapp_keyboard(url),
         parse_mode="HTML",
