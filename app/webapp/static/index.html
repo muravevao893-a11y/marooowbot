@@ -27,7 +27,7 @@ body{background:radial-gradient(900px 520px at 50% -18%,rgba(248,199,93,.18),tra
 .screen{animation:rise .34s cubic-bezier(.2,.8,.2,1)}@keyframes rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
 .top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px}.brand{display:flex;align-items:center;gap:10px;min-width:0}.mark{width:43px;height:43px;border-radius:15px;background:linear-gradient(135deg,#fff0b9,#f5af28);display:grid;place-items:center;color:#161006;font-weight:1000;font-size:24px;box-shadow:0 16px 34px rgba(248,183,50,.22)}.brand b{display:block;font-size:23px;line-height:1;letter-spacing:0}.brand span{display:block;margin-top:3px;color:var(--muted);font-size:11px;font-weight:800}.actions{display:flex;align-items:center;gap:7px}.pill{height:39px;border-radius:999px;padding:0 11px;display:flex;align-items:center;gap:7px;background:#0d1018;border:1px solid var(--line);font-size:13px;font-weight:950;white-space:nowrap}.pill.gold{color:#ffe3a2;border-color:#57421f;background:linear-gradient(180deg,#171419,#0d1017)}.pill:active,.btn:active,.nav button:active,.card:active,.row-button:active{transform:scale(.98)}
 .icon{width:20px;height:20px;display:inline-grid;place-items:center}.icon svg{width:100%;height:100%;display:block}.gold{color:var(--gold)}
-.hero{position:relative;min-height:218px;padding:20px;border-radius:28px;overflow:hidden;background:linear-gradient(135deg,#121825 0%,#0e1119 48%,#211706 100%);border:1px solid #2b3448;box-shadow:var(--shadow);margin-bottom:12px}.hero:before{content:"";position:absolute;right:-70px;top:-74px;width:230px;height:230px;border-radius:50%;background:radial-gradient(circle,#ffcd67,transparent 65%);opacity:.42}.hero h1{position:relative;z-index:2;margin:0 0 8px;font-size:31px;line-height:1.02;letter-spacing:0}.hero p{position:relative;z-index:2;margin:0;max-width:220px;color:#dce3f1;font-size:14px;font-weight:760;line-height:1.42}.hero-actions{position:relative;z-index:3;display:flex;gap:8px;margin-top:16px;flex-wrap:wrap}.hero-visual{position:absolute;right:8px;bottom:10px;width:154px;height:142px;filter:drop-shadow(0 26px 38px rgba(0,0,0,.5));animation:float 4s ease-in-out infinite}.hero-visual svg{width:100%;height:100%}@keyframes float{50%{transform:translateY(-7px) rotate(-1deg)}}
+.hero{position:relative;min-height:218px;padding:20px;border-radius:28px;overflow:hidden;background:radial-gradient(circle at 84% 24%,rgba(255,215,121,.24),transparent 28%),linear-gradient(135deg,#121825 0%,#0e1119 48%,#211706 100%);border:1px solid #2b3448;box-shadow:var(--shadow);margin-bottom:12px}.hero:before{content:"";position:absolute;right:-70px;top:-74px;width:230px;height:230px;border-radius:50%;background:radial-gradient(circle,#ffcd67,transparent 65%);opacity:.42}.hero h1{position:relative;z-index:2;margin:0 0 8px;font-size:31px;line-height:1.02;letter-spacing:0;text-shadow:0 2px 0 rgba(0,0,0,.22)}.hero p{position:relative;z-index:2;margin:0;max-width:220px;color:#dce3f1;font-size:14px;font-weight:760;line-height:1.42}.hero-actions{position:relative;z-index:3;display:flex;gap:8px;margin-top:16px;flex-wrap:wrap}.hero-visual{position:absolute;right:2px;bottom:2px;width:166px;height:150px;filter:drop-shadow(0 26px 38px rgba(0,0,0,.5));animation:float 4s ease-in-out infinite}.hero-visual svg{width:100%;height:100%}@keyframes float{50%{transform:translateY(-7px) rotate(-1deg)}}
 .btn{min-height:44px;border-radius:15px;padding:0 15px;display:inline-flex;align-items:center;justify-content:center;gap:7px;background:linear-gradient(180deg,#ffe396,#f4ae2e);color:#160f05;font-weight:1000;box-shadow:0 14px 34px rgba(248,183,50,.20),inset 0 1px rgba(255,255,255,.55);transition:.15s transform,.15s opacity}.btn.dark{background:#121722;color:var(--text);border:1px solid var(--line);box-shadow:none}.btn.ghost{background:#11151f;color:#ffe0a0;border:1px solid #60491f;box-shadow:none}.btn.blue{background:linear-gradient(180deg,#8fd7ff,#48aef6);color:#06101a}.btn:disabled{opacity:.45;filter:grayscale(.75);box-shadow:none}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}.stat{position:relative;overflow:hidden;border-radius:20px;min-height:96px;padding:14px;background:linear-gradient(180deg,#101520,#0b0e15);border:1px solid var(--line)}.stat span{display:block;color:var(--muted);font-size:12px;font-weight:850}.stat b{display:block;margin-top:7px;font-size:24px;letter-spacing:0}.stat:after{content:"";position:absolute;right:-38px;bottom:-44px;width:105px;height:105px;border-radius:50%;background:rgba(248,199,93,.12);filter:blur(12px)}
 .section{margin-top:18px}.section-head{display:flex;align-items:center;justify-content:space-between;margin:0 2px 10px}.section-head h2{margin:0;font-size:18px;letter-spacing:0}.section-head span{color:var(--muted);font-size:12px;font-weight:850}.stack{display:grid;gap:10px}
@@ -103,35 +103,77 @@ body{background:radial-gradient(900px 520px at 50% -18%,rgba(248,199,93,.18),tra
     };
     try { xhr.send(); } catch(e) { cb({ok:false,error:'network'}); }
   }
-  function icon(text) {
-    return '<div class="mini" style="font-size:24px;font-weight:1000">' + text + '</div>';
+  var fallbackSvg = {
+    star:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.4l2.9 5.9 6.5 1-4.7 4.6 1.1 6.5-5.8-3.1-5.8 3.1 1.1-6.5-4.7-4.6 6.5-1L12 2.4z"/></svg>',
+    gift:'<svg viewBox="0 0 24 24" fill="none"><path d="M4 10h16v10H4V10zM3 7h18v3H3V7zM12 7v13M8.4 7C6.5 7 6 5.8 6.4 4.9 7 3.2 9.4 3.8 12 7c2.6-3.2 5-3.8 5.6-2.1.4.9-.1 2.1-2 2.1" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    link:'<svg viewBox="0 0 24 24" fill="none"><path d="M10 14a5 5 0 0 0 7.1 0l1.5-1.5a5 5 0 0 0-7.1-7.1L10.4 6.5M14 10a5 5 0 0 0-7.1 0l-1.5 1.5a5 5 0 0 0 7.1 7.1l1.1-1.1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+    game:'<svg viewBox="0 0 24 24" fill="none"><path d="M7 10h10a4 4 0 0 1 3.8 2.8l.8 2.7a3 3 0 0 1-5 3l-1.8-1.8H9.2l-1.8 1.8a3 3 0 0 1-5-3l.8-2.7A4 4 0 0 1 7 10z" stroke="currentColor" stroke-width="1.8"/><path d="M8 13v3M6.5 14.5h3M15.5 14.5h.01M18 13.5h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+    diamond:'<svg viewBox="0 0 24 24" fill="none"><path d="M4 8l4-4h8l4 4-8 12L4 8z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M8 4l4 16 4-16M4 8h16" stroke="currentColor" stroke-width="1.4"/></svg>',
+    user:'<svg viewBox="0 0 24 24" fill="none"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21a8 8 0 0 1 16 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+    case:'<svg viewBox="0 0 220 170" fill="none"><defs><linearGradient id="fallbackCaseG" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#FFEAA8"/><stop offset="1" stop-color="#F4A62B"/></linearGradient></defs><ellipse cx="110" cy="146" rx="88" ry="16" fill="#000" opacity=".36"/><rect x="30" y="52" width="160" height="86" rx="20" fill="#0B0D12" stroke="url(#fallbackCaseG)" stroke-width="6"/><path d="M52 52V36c0-11 9-20 20-20h76c11 0 20 9 20 20v16" stroke="url(#fallbackCaseG)" stroke-width="12" stroke-linecap="round"/><path d="M30 83h160M72 52v86M148 52v86" stroke="#6E4712" stroke-width="5" opacity=".86"/><path d="M110 70l12 25 27 4-20 19 5 27-24-13-24 13 5-27-20-19 27-4 12-25z" fill="url(#fallbackCaseG)"/></svg>'
+  };
+  function icon(name) {
+    return '<div class="mini">' + (fallbackSvg[name] || fallbackSvg.star) + '</div>';
   }
-  function render(data, gifts) {
+  function navIcon(name) {
+    return '<span class="icon">' + (fallbackSvg[name] || fallbackSvg.star) + '</span>';
+  }
+  var fallbackData = null;
+  var fallbackGifts = null;
+  var fallbackActiveTab = 'home';
+  function render(data, gifts, force) {
     var view = document.getElementById('view');
     var nav = document.getElementById('nav');
-    if (!view || view.innerHTML) return;
+    if (!view || (view.innerHTML && !force)) return;
+    fallbackData = data || fallbackData;
+    fallbackGifts = gifts || fallbackGifts;
     var ok = data && data.ok;
     var user = ok ? data.user : {stars:0, wins_count:0, level:1, exp:0, ref_link:''};
     var chance = ok ? data.chance : {final:3, attempts_7d:0, active_refs:0};
     var giftRows = '';
     var items = gifts && gifts.items ? gifts.items.slice(0, 4) : [];
     for (var i = 0; i < items.length; i++) {
-      giftRows += '<div class="row">' + icon(esc(items[i].emoji || '🎁')) + '<div class="row-main"><b>' + esc(String(items[i].id || '').slice(0, 20)) + '</b><span>' + fmt(items[i].star_count) + ' Stars</span></div></div>';
+      giftRows += '<div class="row">' + icon('gift') + '<div class="row-main"><b>' + esc(String(items[i].id || '').slice(0, 20)) + '</b><span>' + fmt(items[i].star_count) + ' Stars</span></div></div>';
     }
     if (!giftRows) giftRows = '<div class="empty">Каталог подарков временно недоступен.</div>';
-    view.innerHTML =
-      '<div class="screen">' +
-      '<div class="top"><div class="brand"><div class="mark">&</div><div><b>&marooow</b><span>Mini App</span></div></div><button class="pill" onclick="fallbackTopup()">★ ' + fmt(user.stars) + ' +</button></div>' +
-      (ok ? '' : '<div class="preview show">Preview-режим. Открой Mini App через кнопку в боте, чтобы включить профиль и бонусы.</div>') +
-      '<section class="hero"><h1>Твой центр подарков</h1><p>Бонусы, дропы, игры и Telegram Gifts в одном интерфейсе.</p><div class="hero-actions"><button class="btn" onclick="fallbackDaily()">Забрать бонус</button><button class="btn ghost" onclick="fallbackCopy()">Реф ссылка</button></div></section>' +
-      '<div class="stats"><div class="stat"><span>Шанс</span><b>' + esc(chance.final) + '%</b></div><div class="stat"><span>Stars</span><b>' + fmt(user.stars) + '</b></div><div class="stat"><span>Побед</span><b>' + fmt(user.wins_count) + '</b></div><div class="stat"><span>Активность</span><b>' + fmt(chance.attempts_7d) + '</b></div></div>' +
-      '<section class="section"><div class="section-head"><h2>Telegram Gifts</h2><span>live</span></div><div class="stack">' + giftRows + '</div></section>' +
-      '<section class="panel"><h3>Level ' + fmt(user.level) + '</h3><p>EXP: ' + fmt(user.exp) + '</p></section>' +
-      '</div>';
-    nav.innerHTML = '<button class="active">🎁<span>Бонусы</span></button><button>🔗<span>Дропы</span></button><button>🎮<span>Игры</span></button><button>💎<span>Gifts</span></button><button>👤<span>Профиль</span></button>';
+    var content =
+      '<div class="top"><div class="brand"><div class="mark">&</div><div><b>&marooow</b><span>Mini App</span></div></div><button class="pill" onclick="fallbackTopup()">' + navIcon('star') + fmt(user.stars) + ' +</button></div>' +
+      (ok ? '' : '<div class="preview show">Preview-режим. Открой Mini App через кнопку в боте, чтобы включить профиль и бонусы.</div>');
+    if (fallbackActiveTab === 'gifts') {
+      content += '<section class="hero"><h1>Telegram Gifts</h1><p>Витрина доступных подарков и будущий инвентарь проекта.</p><div class="hero-actions"><button class="btn" onclick="fallbackReloadGifts()">' + navIcon('diamond') + 'Обновить</button></div><div class="hero-visual">' + fallbackSvg.case + '</div></section><section class="section"><div class="section-head"><h2>Витрина</h2><span>live</span></div><div class="stack">' + giftRows + '</div></section>';
+    } else if (fallbackActiveTab === 'games') {
+      content += '<section class="hero"><h1>Аркада</h1><p>Демо-игры для EXP проекта без ставок и вывода.</p><div class="hero-actions"><button class="btn" onclick="fallbackPlay()">' + navIcon('game') + 'Играть</button></div><div class="hero-visual">' + fallbackSvg.case + '</div></section><section class="panel"><h3>Demo mode</h3><p>После полной загрузки будут доступны Plinko, Crash и Arcade drop.</p></section>';
+    } else if (fallbackActiveTab === 'drops') {
+      content += '<section class="hero"><h1>Дропы</h1><p>Твой шанс: ' + esc(chance.final) + '%. Активные рефералы усиливают шанс.</p><div class="hero-actions"><button class="btn" onclick="fallbackCopy()">' + navIcon('link') + 'Реф ссылка</button></div><div class="hero-visual">' + fallbackSvg.case + '</div></section><div class="stats"><div class="stat"><span>Шанс</span><b>' + esc(chance.final) + '%</b></div><div class="stat"><span>Активность</span><b>' + fmt(chance.attempts_7d) + '</b></div></div>';
+    } else if (fallbackActiveTab === 'profile') {
+      content += '<section class="profile-card">' + icon('user') + '<div class="row-main"><b style="font-size:20px">' + esc((data.telegram && data.telegram.first_name) || (user.first_name || 'marooow')) + '</b><span>Level ' + fmt(user.level) + ' · ' + fmt(user.stars) + ' Stars</span></div></section><div class="copybox"><input readonly value="' + esc(user.ref_link || 'Нет ссылки') + '"><button onclick="fallbackCopy()">' + navIcon('link') + '</button></div><div class="stats" style="margin-top:14px"><div class="stat"><span>EXP</span><b>' + fmt(user.exp) + '</b></div><div class="stat"><span>Побед</span><b>' + fmt(user.wins_count) + '</b></div></div>';
+    } else {
+      content += '<section class="hero"><h1>Твой центр подарков</h1><p>Бонусы, дропы, игры и Telegram Gifts в одном интерфейсе.</p><div class="hero-actions"><button class="btn" onclick="fallbackDaily()">' + navIcon('star') + 'Забрать бонус</button><button class="btn ghost" onclick="fallbackCopy()">' + navIcon('link') + 'Реф ссылка</button></div><div class="hero-visual">' + fallbackSvg.case + '</div></section><div class="stats"><div class="stat"><span>Шанс</span><b>' + esc(chance.final) + '%</b></div><div class="stat"><span>Stars</span><b>' + fmt(user.stars) + '</b></div><div class="stat"><span>Побед</span><b>' + fmt(user.wins_count) + '</b></div><div class="stat"><span>Активность</span><b>' + fmt(chance.attempts_7d) + '</b></div></div><section class="section"><div class="section-head"><h2>Telegram Gifts</h2><span>live</span></div><div class="stack">' + giftRows + '</div></section><section class="panel"><h3>Level ' + fmt(user.level) + '</h3><p>EXP: ' + fmt(user.exp) + '</p></section>';
+    }
+    view.innerHTML = '<div class="screen">' + content + '</div>';
+    function navButton(tab, name, label) {
+      return '<button class="' + (fallbackActiveTab === tab ? 'active' : '') + '" onclick="fallbackTab(\'' + tab + '\')">' + navIcon(name) + '<span>' + label + '</span></button>';
+    }
+    nav.innerHTML = navButton('home','gift','Бонусы') + navButton('drops','link','Дропы') + navButton('games','game','Игры') + navButton('gifts','diamond','Gifts') + navButton('profile','user','Профиль');
     window.__fallbackUser = user;
     hideSplash();
   }
+  window.fallbackTab = function(tab) {
+    fallbackActiveTab = tab || 'home';
+    render(fallbackData || {ok:false}, fallbackGifts || {items:[]}, true);
+  };
+  window.fallbackReloadGifts = function() {
+    get('/api/gift-catalog', function(gifts) {
+      fallbackGifts = gifts || {items:[]};
+      render(fallbackData || {ok:false}, fallbackGifts, true);
+    });
+  };
+  window.fallbackPlay = function() {
+    if (!tg || !tg.initData) return alert('Открой Mini App через кнопку в боте.');
+    post('/api/play/demo', {initData: tg.initData, game:'arcade'}, function(res) {
+      alert(res && res.ok ? ('Раунд завершён: +' + res.exp_added + ' EXP') : (res.message || 'Игра пока недоступна'));
+    });
+  };
   window.fallbackDaily = function() {
     if (!tg || !tg.initData) return alert('Открой Mini App через кнопку в боте.');
     post('/api/daily', {initData: tg.initData}, function(res) {
@@ -145,7 +187,11 @@ body{background:radial-gradient(900px 520px at 50% -18%,rgba(248,199,93,.18),tra
     alert('Ссылка скопирована');
   };
   window.fallbackTopup = function() {
-    alert('Пополнение доступно после полной загрузки Mini App.');
+    if (!tg || !tg.initData) return alert('Открой Mini App через кнопку в боте.');
+    post('/api/topup', {initData: tg.initData, amount:100}, function(res) {
+      if (res && res.ok && res.invoice_url && tg && tg.openInvoice) tg.openInvoice(res.invoice_url);
+      else alert((res && (res.message || res.error)) || 'Не удалось открыть оплату');
+    });
   };
   setTimeout(function() {
     var view = document.getElementById('view');
@@ -413,7 +459,7 @@ function leaderRows(rows, kind){
 }
 
 function giftRow(g){
-  const media = g.media_url ? `<img class="gift-img" src="${safe(g.media_url)}" alt="" onerror="this.replaceWith(document.createTextNode('${safe(g.emoji || '🎁')}'))">` : safe(g.emoji || '🎁');
+  const media = g.media_url ? `<img class="gift-img" src="${safe(g.media_url)}" alt="" onerror="this.remove()">` : svg.gift;
   const left = g.remaining_count == null ? '∞' : fmt(g.remaining_count);
   return `<div class="row"><div class="mini">${media}</div><div class="row-main"><b>${safe(short(g.id))}</b><span>${fmt(g.star_count)} Stars · осталось ${left}</span></div></div>`;
 }
@@ -434,14 +480,17 @@ function setTab(tab){
 
 async function bootstrap(){
   document.getElementById('loaderVisual').innerHTML = svg.case;
+  state = {...state, ...previewState(), authOk:false, loading:true};
+  shell();
+  setTimeout(()=>splash.classList.add('hide'), 250);
   try{
     const me = await api('/api/me', {}, 'POST', 6500);
     state = {...state, ...me, authOk:true, loading:false};
+    shell();
   }catch(e){
-    state = {...state, ...previewState(), authOk:false, loading:false};
+    state = {...state, authOk:false, loading:false};
+    shell();
   }
-  shell();
-  setTimeout(()=>splash.classList.add('hide'), 350);
   refreshSideData();
   if(state.authOk) loadInventory(false);
 }

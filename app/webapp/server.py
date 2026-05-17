@@ -101,13 +101,13 @@ async def index(request: web.Request) -> web.Response:
             "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0",
             "Pragma": "no-cache",
             "Expires": "0",
-            "X-Maroow-UI": "v15-miniapp-fallback",
+            "X-Maroow-UI": "v17-miniapp-instant-ui",
         },
     )
 
 
 async def health(request: web.Request) -> web.Response:
-    return _json({"ok": True, "service": "marooow-miniapp", "version": "miniapp-ui-v15"})
+    return _json({"ok": True, "service": "marooow-miniapp", "version": "miniapp-ui-v17"})
 
 
 async def ton_manifest(request: web.Request) -> web.Response:
