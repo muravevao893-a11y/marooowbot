@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import logging
 import re
+import sys
 
 from aiohttp import web
 from aiogram import Bot, Dispatcher
@@ -132,4 +133,8 @@ async def main() -> None:
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    try:
+        asyncio.run(main())
+    except RuntimeError as exc:
+        logging.critical("%s", exc)
+        sys.exit(1)
