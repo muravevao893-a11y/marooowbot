@@ -32,6 +32,10 @@ async def send_gift_to_winner(bot: Bot, settings: Settings, winner: GiveawayWinn
         winner.delivery_status = DeliveryStatus.MANUAL_REQUIRED
         winner.delivery_error = str(exc)
         winner.claimed_at = utcnow()
+    except Exception as exc:
+        winner.delivery_status = DeliveryStatus.MANUAL_REQUIRED
+        winner.delivery_error = str(exc)
+        winner.claimed_at = utcnow()
     else:
         winner.delivery_status = DeliveryStatus.SENT
         winner.delivery_error = None

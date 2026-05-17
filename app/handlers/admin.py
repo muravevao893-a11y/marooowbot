@@ -55,10 +55,11 @@ async def cmd_drop(message: Message, command: CommandObject) -> None:
         return
     try:
         minutes = max(1, int(parts[0]))
-        winners = max(1, int(parts[1]))
+        int(parts[1])
     except ValueError:
         await message.answer("Минуты и победители должны быть числами.")
         return
+    winners = 1
     prize = parts[2].strip()
     now = utcnow()
     ends_at = now + timedelta(minutes=minutes)

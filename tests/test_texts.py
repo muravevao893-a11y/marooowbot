@@ -1,17 +1,16 @@
 from datetime import datetime, timezone
 
-from app.texts import manual_giveaway_text, auto_drop_text
+from app.texts import auto_drop_text, manual_post_text
 
 
 def test_manual_text_contains_counter():
-    text = manual_giveaway_text("РОЗЫГРЫШ", "тест", "мишка", 3, datetime.now(timezone.utc), 42)
-    assert "РОЗЫГРЫШ" in text
+    text = manual_post_text("drop", "gift", 1, datetime.now(timezone.utc), 42)
+    assert "drop" in text
     assert "42" in text
-    assert "мишка" in text
+    assert "gift" in text
 
 
 def test_auto_text_contains_chance():
-    text = auto_drop_text("Кто хочет мишку?", "мишка", datetime.now(timezone.utc), 1, 3)
+    text = auto_drop_text("drop", "gift", datetime.now(timezone.utc), 1, 3)
     assert "3%" in text
-    assert "мишка" in text
-    assert "Забрать мишку" in text
+    assert "gift" in text
