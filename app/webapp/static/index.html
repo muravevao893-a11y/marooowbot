@@ -57,6 +57,107 @@ body{background:radial-gradient(900px 520px at 50% -18%,rgba(248,199,93,.18),tra
   </div>
 </div>
 <script>
+(function(){
+  var tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
+  try {
+    if (tg) {
+      tg.ready();
+      tg.expand();
+      if (tg.setHeaderColor) tg.setHeaderColor('#07080c');
+      if (tg.setBackgroundColor) tg.setBackgroundColor('#07080c');
+    }
+  } catch (e) {}
+
+  function esc(value) {
+    return String(value == null ? '' : value).replace(/[&<>"']/g, function(ch) {
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[ch];
+    });
+  }
+  function fmt(value) {
+    try { return Number(value || 0).toLocaleString('ru-RU'); } catch (e) { return String(value || 0); }
+  }
+  function hideSplash() {
+    var splash = document.getElementById('splash');
+    if (splash) splash.className += ' hide';
+  }
+  function post(path, body, cb) {
+    var xhr = new XMLHttpRequest();
+    var done = false;
+    var timer = setTimeout(function(){ if (!done) { done = true; try { xhr.abort(); } catch(e) {} cb({ok:false,error:'timeout'}); } }, 6500);
+    xhr.open('POST', path, true);
+    xhr.setRequestHeader('Content-Type', 'application/json');
+    xhr.onreadystatechange = function() {
+      if (xhr.readyState !== 4 || done) return;
+      done = true;
+      clearTimeout(timer);
+      try { cb(JSON.parse(xhr.responseText || '{}')); } catch(e) { cb({ok:false,error:'bad_json'}); }
+    };
+    try { xhr.send(JSON.stringify(body || {})); } catch(e) { clearTimeout(timer); cb({ok:false,error:'network'}); }
+  }
+  function get(path, cb) {
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', path, true);
+    xhr.onreadystatechange = function() {
+      if (xhr.readyState !== 4) return;
+      try { cb(JSON.parse(xhr.responseText || '{}')); } catch(e) { cb({ok:false,error:'bad_json'}); }
+    };
+    try { xhr.send(); } catch(e) { cb({ok:false,error:'network'}); }
+  }
+  function icon(text) {
+    return '<div class="mini" style="font-size:24px;font-weight:1000">' + text + '</div>';
+  }
+  function render(data, gifts) {
+    var view = document.getElementById('view');
+    var nav = document.getElementById('nav');
+    if (!view || view.innerHTML) return;
+    var ok = data && data.ok;
+    var user = ok ? data.user : {stars:0, wins_count:0, level:1, exp:0, ref_link:''};
+    var chance = ok ? data.chance : {final:3, attempts_7d:0, active_refs:0};
+    var giftRows = '';
+    var items = gifts && gifts.items ? gifts.items.slice(0, 4) : [];
+    for (var i = 0; i < items.length; i++) {
+      giftRows += '<div class="row">' + icon(esc(items[i].emoji || '🎁')) + '<div class="row-main"><b>' + esc(String(items[i].id || '').slice(0, 20)) + '</b><span>' + fmt(items[i].star_count) + ' Stars</span></div></div>';
+    }
+    if (!giftRows) giftRows = '<div class="empty">Каталог подарков временно недоступен.</div>';
+    view.innerHTML =
+      '<div class="screen">' +
+      '<div class="top"><div class="brand"><div class="mark">&</div><div><b>&marooow</b><span>Mini App</span></div></div><button class="pill" onclick="fallbackTopup()">★ ' + fmt(user.stars) + ' +</button></div>' +
+      (ok ? '' : '<div class="preview show">Preview-режим. Открой Mini App через кнопку в боте, чтобы включить профиль и бонусы.</div>') +
+      '<section class="hero"><h1>Твой центр подарков</h1><p>Бонусы, дропы, игры и Telegram Gifts в одном интерфейсе.</p><div class="hero-actions"><button class="btn" onclick="fallbackDaily()">Забрать бонус</button><button class="btn ghost" onclick="fallbackCopy()">Реф ссылка</button></div></section>' +
+      '<div class="stats"><div class="stat"><span>Шанс</span><b>' + esc(chance.final) + '%</b></div><div class="stat"><span>Stars</span><b>' + fmt(user.stars) + '</b></div><div class="stat"><span>Побед</span><b>' + fmt(user.wins_count) + '</b></div><div class="stat"><span>Активность</span><b>' + fmt(chance.attempts_7d) + '</b></div></div>' +
+      '<section class="section"><div class="section-head"><h2>Telegram Gifts</h2><span>live</span></div><div class="stack">' + giftRows + '</div></section>' +
+      '<section class="panel"><h3>Level ' + fmt(user.level) + '</h3><p>EXP: ' + fmt(user.exp) + '</p></section>' +
+      '</div>';
+    nav.innerHTML = '<button class="active">🎁<span>Бонусы</span></button><button>🔗<span>Дропы</span></button><button>🎮<span>Игры</span></button><button>💎<span>Gifts</span></button><button>👤<span>Профиль</span></button>';
+    window.__fallbackUser = user;
+    hideSplash();
+  }
+  window.fallbackDaily = function() {
+    if (!tg || !tg.initData) return alert('Открой Mini App через кнопку в боте.');
+    post('/api/daily', {initData: tg.initData}, function(res) {
+      alert(res && res.ok ? ('Бонус получен: +' + res.stars_added + ' Stars') : (res.message || 'Бонус пока недоступен'));
+    });
+  };
+  window.fallbackCopy = function() {
+    var link = window.__fallbackUser && window.__fallbackUser.ref_link;
+    if (!link) return alert('Реф ссылка появится после авторизации.');
+    try { navigator.clipboard.writeText(link); } catch(e) {}
+    alert('Ссылка скопирована');
+  };
+  window.fallbackTopup = function() {
+    alert('Пополнение доступно после полной загрузки Mini App.');
+  };
+  setTimeout(function() {
+    var view = document.getElementById('view');
+    if (view && view.innerHTML) return;
+    var initData = tg && tg.initData ? tg.initData : '';
+    post('/api/me', {initData:initData}, function(me) {
+      get('/api/gift-catalog', function(gifts) { render(me, gifts); });
+    });
+  }, 2200);
+})();
+</script>
+<script>
 const tg = window.Telegram?.WebApp || null;
 try{tg?.ready?.();tg?.expand?.();tg?.setHeaderColor?.('#07080c');tg?.setBackgroundColor?.('#07080c');tg?.setBottomBarColor?.('#07080c');tg?.disableVerticalSwipes?.();}catch(e){}
 

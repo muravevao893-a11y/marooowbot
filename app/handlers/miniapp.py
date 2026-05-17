@@ -9,7 +9,7 @@ from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message, W
 
 router = Router(name="miniapp")
 
-MINI_APP_VERSION = "14"
+MINI_APP_VERSION = "15"
 DEFAULT_MINI_APP_URL = f"https://marooowbot-production.up.railway.app/app?v={MINI_APP_VERSION}"
 
 
